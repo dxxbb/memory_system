@@ -1,0 +1,32 @@
+{
+  "center": {
+    "title": "Store",
+    "subtitle": "唯一真相源"
+  },
+  "cards": [
+    {
+      "class_name": "claude",
+      "title": "Claude Code",
+      "entry": "`~/.claude/CLAUDE.md` + repo `CLAUDE.md`",
+      "note": "projection 进入项目 memory 体系，可用 hooks 做当天补充"
+    },
+    {
+      "class_name": "openclaw",
+      "title": "OpenClaw",
+      "entry": "`MEMORY.md` + `memory/YYYY-MM-DD.md`",
+      "note": "workspace 本身就是落点"
+    },
+    {
+      "class_name": "codex",
+      "title": "Codex",
+      "entry": "`AGENTS.md` + `config.toml` + MCP",
+      "note": "不能只放 projection 文件，必须写到它会发现的入口"
+    },
+    {
+      "class_name": "chatgpt",
+      "title": "ChatGPT",
+      "entry": "project files / instructions / memory",
+      "note": "只吃你送进去的 summary，送达状态要单独记录"
+    }
+  ]
+}

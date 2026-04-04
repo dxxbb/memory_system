@@ -1,0 +1,45 @@
+{
+  "segments": [
+    {
+      "kind": "column",
+      "head": "Step 1",
+      "title": "Capture",
+      "codes": [
+        "kb/inbox/2026-04-03-writing-style.md",
+        "kb/daily/2026-04-03.md"
+      ],
+      "body": "先记 correction item，再在 daily 里留下候选决策。"
+    },
+    {
+      "kind": "bridge",
+      "label": "same day"
+    },
+    {
+      "kind": "column",
+      "head": "Step 2",
+      "title": "Projections",
+      "codes": [
+        "projections/claude/CLAUDE.memory.md",
+        "projections/openclaw/MEMORY.md",
+        "codex-repo/AGENTS.md",
+        "projections/chatgpt/project-summary.md"
+      ],
+      "body": "前三个同天刷新，ChatGPT 只生成 summary，并标记 pending。"
+    },
+    {
+      "kind": "bridge",
+      "label": "later"
+    },
+    {
+      "kind": "column",
+      "head": "Step 3",
+      "title": "Store",
+      "codes": [
+        "kb/profile/user.md",
+        "kb/decisions/phase-1-kb-first.md",
+        "kb/projects/personal-memory-system.md"
+      ],
+      "body": "晚些时候再 Consolidate，把规则写进 Store，关闭 inbox item。"
+    }
+  ]
+}

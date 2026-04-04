@@ -1,0 +1,61 @@
+{
+  "hero_strip": [
+    {
+      "kind": "node",
+      "class_name": "capture",
+      "title": "Capture",
+      "subtitle": "daily / inbox / raw input"
+    },
+    {
+      "kind": "arrow",
+      "label": "Consolidate"
+    },
+    {
+      "kind": "node",
+      "class_name": "store",
+      "title": "Store",
+      "subtitle": "profile / project / decision / topic / procedure / lesson"
+    },
+    {
+      "kind": "arrow",
+      "label": "Project"
+    },
+    {
+      "kind": "node",
+      "class_name": "projection",
+      "title": "Projections",
+      "subtitle": "Claude Code / OpenClaw / Codex / ChatGPT"
+    }
+  ],
+  "capture": {
+    "index": "01",
+    "title": "Capture",
+    "copy": "先接住，先别假装它已经稳定。",
+    "chips": ["daily", "inbox", "raw notes", "same-day correction"]
+  },
+  "store": {
+    "index": "02",
+    "title": "Store",
+    "copy": "唯一真相源。稳定、当前有效、可持续维护。",
+    "chips": ["profile", "project", "decision", "topic", "procedure", "lesson"]
+  },
+  "bridges": ["Consolidate", "Project"],
+  "projections": [
+    {
+      "title": "Claude Code",
+      "subtitle": "`CLAUDE.md` / imports / hooks"
+    },
+    {
+      "title": "OpenClaw",
+      "subtitle": "`MEMORY.md` / `memory/YYYY-MM-DD.md`"
+    },
+    {
+      "title": "Codex",
+      "subtitle": "`AGENTS.md` / `config.toml` / MCP"
+    },
+    {
+      "title": "ChatGPT",
+      "subtitle": "project files / instructions / summary"
+    }
+  ]
+}

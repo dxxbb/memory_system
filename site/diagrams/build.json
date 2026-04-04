@@ -1,0 +1,20 @@
+{
+  "tracks": [
+    {
+      "title": "Phase 1",
+      "body": "Capture / Store / Projections 结构、文件操作、模板、例子。"
+    },
+    {
+      "title": "Phase 2",
+      "body": "导入器、source refs、normalization、correction lifecycle。"
+    },
+    {
+      "title": "Phase 3",
+      "body": "Consolidate jobs、conflict handling、archive routing。"
+    },
+    {
+      "title": "Phase 4+",
+      "body": "platform sync、MCP、optional indexes、evolve pipeline。"
+    }
+  ]
+}

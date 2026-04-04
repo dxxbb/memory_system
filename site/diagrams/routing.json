@@ -1,0 +1,9 @@
+{
+  "columns": ["输入类型", "先去哪", "稳定后去哪", "平台处理"],
+  "rows": [
+    ["今天先别写太长", "Capture", "可能不过夜，不进 Store", "只刷新目标平台 projection"],
+    ["文档每节保留 1 个例子", "Capture", "Store / profile", "Claude / OpenClaw / Codex 同天更新"],
+    ["Phase 1 先做 knowledge base", "Capture", "Store / decision", "投影进项目文件和平台入口"],
+    ["目录树是骨架，链接是增强层", "Capture", "Store / topic", "按需进入各平台 projection"]
+  ]
+}

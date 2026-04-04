@@ -1,0 +1,58 @@
+{
+  "lanes": [
+    {
+      "class_name": "standard",
+      "title": "标准路径",
+      "subtitle": "大部分新信息都走这条",
+      "steps": [
+        {
+          "index": "1",
+          "title": "写进 Capture",
+          "body": "daily / inbox / raw import"
+        },
+        {
+          "index": "2",
+          "title": "Consolidate",
+          "body": "整理成 profile / project / decision / topic / procedure"
+        },
+        {
+          "index": "3",
+          "title": "更新 Store",
+          "body": "当前有效状态在这里固定下来"
+        },
+        {
+          "index": "4",
+          "title": "Project",
+          "body": "刷新平台侧文件和摘要"
+        }
+      ]
+    },
+    {
+      "class_name": "hotfix",
+      "title": "Same-day correction",
+      "subtitle": "今天就要生效的规则走这条",
+      "steps": [
+        {
+          "index": "1",
+          "title": "建 correction item",
+          "body": "写 targets、expires_at、status"
+        },
+        {
+          "index": "2",
+          "title": "立即刷新目标平台",
+          "body": "Claude / OpenClaw / Codex 可当天用上"
+        },
+        {
+          "index": "3",
+          "title": "晚些时候再 Consolidate",
+          "body": "并进 Store，然后关闭 inbox item"
+        },
+        {
+          "index": "4",
+          "title": "重新 Project",
+          "body": "让 hot fix 变成长期稳定状态"
+        }
+      ]
+    }
+  ]
+}

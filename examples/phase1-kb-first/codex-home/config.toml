@@ -1,0 +1,6 @@
+[mcp_servers.personal_kb]
+command = "kb-server"
+args = ["serve", "--root", "/path/to/kb"]
+
+project_doc_fallback_filenames = [".agents.md"]
+project_doc_max_bytes = 65536

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Personal Memory System</title>
+    <meta
+      name="description"
+      content="Capture, Store, Projections. A visual architecture page for the Personal Memory System."
+    />
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <!-- Generated from site/content.md and site/diagrams/*.json by scripts/build_site.py -->
+    <div class="page-shell">
+      <header class="hero">
+        <nav class="topbar">
+          <div class="brand">
+            <span class="brand-mark">PMS</span>
+            <span class="brand-copy">Personal Memory System</span>
+          </div>
+          <div class="topbar-links">
+            <a href="#system">System</a>
+<a href="#routing">Routing</a>
+<a href="#runtime">Runtime</a>
+<a href="#platforms">Platforms</a>
+<a href="#example">Example</a>
+          </div>
+        </nav>
+
+        <div class="hero-card">
+          <div class="hero-copy">
+            <p class="eyebrow">All-in-one architecture page</p>
+            <h1>Capture, Store, Projections.</h1>
+            <p class="hero-text">这个页面只负责一件事：把 Markdown 文档里不容易讲清楚的结构、流程、分流和回流，用图的方式讲明白。</p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="#system">看整体架构</a>
+              <a class="button button-secondary" href="#example">看一个真实例子</a>
+            </div>
+          </div>
+
+          <div class="hero-strip">
+            <div class="hero-node capture">
+              <h2>Capture</h2>
+              <p>daily / inbox / raw input</p>
+            </div>
+<div class="hero-arrow">Consolidate</div>
+<div class="hero-node store">
+              <h2>Store</h2>
+              <p>profile / project / decision / topic / procedure / lesson</p>
+            </div>
+<div class="hero-arrow">Project</div>
+<div class="hero-node projection">
+              <h2>Projections</h2>
+              <p>Claude Code / OpenClaw / Codex / ChatGPT</p>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <section id="system" class="section">
+          <div class="section-heading">
+            <p class="eyebrow">System Map</p>
+            <h2>整体架构图</h2>
+            <p>这套系统只保留三个结构块。平台侧改动可以回流，但不直接改主库。</p>
+          </div>
+
+          <div class="diagram-frame system-map">
+            <div class="system-column">
+              <div class="diagram-box capture-box">
+                <div class="diagram-title">
+                  <span class="diagram-index">01</span>
+                  <h3>Capture</h3>
+                </div>
+                <p class="diagram-copy">先接住，先别假装它已经稳定。</p>
+                <div class="chip-cloud">
+                  <span>daily</span>
+<span>inbox</span>
+<span>raw notes</span>
+<span>same-day correction</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flow-bridge">
+              <span>Consolidate</span>
+            </div>
+
+            <div class="system-column">
+              <div class="diagram-box store-box">
+                <div class="diagram-title">
+                  <span class="diagram-index">02</span>
+                  <h3>Store</h3>
+                </div>
+                <p class="diagram-copy">唯一真相源。稳定、当前有效、可持续维护。</p>
+                <div class="chip-cloud">
+                  <span>profile</span>
+<span>project</span>
+<span>decision</span>
+<span>topic</span>
+<span>procedure</span>
+<span>lesson</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flow-bridge">
+              <span>Project</span>
+            </div>
+
+            <div class="system-column">
+              <div class="projection-grid">
+                <div class="diagram-box projection-box">
+              <h3>Claude Code</h3>
+              <p><code>CLAUDE.md</code> / imports / hooks</p>
+            </div>
+<div class="diagram-box projection-box">
+              <h3>OpenClaw</h3>
+              <p><code>MEMORY.md</code> / <code>memory/YYYY-MM-DD.md</code></p>
+            </div>
+<div class="diagram-box projection-box">
+              <h3>Codex</h3>
+              <p><code>AGENTS.md</code> / <code>config.toml</code> / MCP</p>
+            </div>
+<div class="diagram-box projection-box">
+              <h3>ChatGPT</h3>
+              <p>project files / instructions / summary</p>
+            </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="feedback-band">
+            <div class="feedback-label">回流规则</div>
+            <p>平台侧确认的新规则或热修正 <strong>先回到 Capture</strong>，再做 Consolidate 并进 Store，最后重新生成 Projections。</p>
+          </div>
+        </section>
+
+        <section id="routing" class="section">
+          <div class="section-heading">
+            <p class="eyebrow">Routing</p>
+            <h2>什么东西该放哪</h2>
+            <p>这块不是知识分类，而是运行时分流规则。看一条信息最终落到哪里。</p>
+          </div>
+
+          <div class="diagram-frame">
+            <div class="routing-table">
+              <div class="routing-head">输入类型</div>
+<div class="routing-head">先去哪</div>
+<div class="routing-head">稳定后去哪</div>
+<div class="routing-head">平台处理</div>
+<div class="routing-cell strong">今天先别写太长</div>
+<div class="routing-cell">Capture</div>
+<div class="routing-cell muted">可能不过夜，不进 Store</div>
+<div class="routing-cell">只刷新目标平台 projection</div>
+<div class="routing-cell strong">文档每节保留 1 个例子</div>
+<div class="routing-cell">Capture</div>
+<div class="routing-cell">Store / profile</div>
+<div class="routing-cell">Claude / OpenClaw / Codex 同天更新</div>
+<div class="routing-cell strong">Phase 1 先做 knowledge base</div>
+<div class="routing-cell">Capture</div>
+<div class="routing-cell">Store / decision</div>
+<div class="routing-cell">投影进项目文件和平台入口</div>
+<div class="routing-cell strong">目录树是骨架，链接是增强层</div>
+<div class="routing-cell">Capture</div>
+<div class="routing-cell">Store / topic</div>
+<div class="routing-cell">按需进入各平台 projection</div>
+            </div>
+          </div>
+        </section>
+
+        <section id="runtime" class="section">
+          <div class="section-heading">
+            <p class="eyebrow">Runtime</p>
+            <h2>运行流程图</h2>
+            <p>标准路径和 same-day correction 不是一条流程。要分开看。</p>
+          </div>
+
+          <div class="runtime-grid">
+            <div class="flow-lane standard-lane">
+              <div class="lane-head">
+                <h3>标准路径</h3>
+                <p>大部分新信息都走这条</p>
+              </div>
+              <div class="flow-step">
+                  <span>1</span>
+                  <div>
+                    <h4>写进 Capture</h4>
+                    <p>daily / inbox / raw import</p>
+                  </div>
+                </div> <div class="lane-arrow"></div> <div class="flow-step">
+                  <span>2</span>
+                  <div>
+                    <h4>Consolidate</h4>
+                    <p>整理成 profile / project / decision / topic / procedure</p>
+                  </div>
+                </div> <div class="lane-arrow"></div> <div class="flow-step">
+                  <span>3</span>
+                  <div>
+                    <h4>更新 Store</h4>
+                    <p>当前有效状态在这里固定下来</p>
+                  </div>
+                </div> <div class="lane-arrow"></div> <div class="flow-step">
+                  <span>4</span>
+                  <div>
+                    <h4>Project</h4>
+                    <p>刷新平台侧文件和摘要</p>
+                  </div>
+                </div>
+            </div>
+<div class="flow-lane hotfix-lane">
+              <div class="lane-head">
+                <h3>Same-day correction</h3>
+                <p>今天就要生效的规则走这条</p>
+              </div>
+              <div class="flow-step">
+                  <span>1</span>
+                  <div>
+                    <h4>建 correction item</h4>
+                    <p>写 targets、expires_at、status</p>
+                  </div>
+                </div> <div class="lane-arrow"></div> <div class="flow-step">
+                  <span>2</span>
+                  <div>
+                    <h4>立即刷新目标平台</h4>
+                    <p>Claude / OpenClaw / Codex 可当天用上</p>
+                  </div>
+                </div> <div class="lane-arrow"></div> <div class="flow-step">
+                  <span>3</span>
+                  <div>
+                    <h4>晚些时候再 Consolidate</h4>
+                    <p>并进 Store，然后关闭 inbox item</p>
+                  </div>
+                </div> <div class="lane-arrow"></div> <div class="flow-step">
+                  <span>4</span>
+                  <div>
+                    <h4>重新 Project</h4>
+                    <p>让 hot fix 变成长期稳定状态</p>
+                  </div>
+                </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="platforms" class="section">
+          <div class="section-heading">
+            <p class="eyebrow">Platform Landing</p>
+            <h2>各平台落地图</h2>
+            <p>Store 不直接暴露给平台。每个平台都有自己的正式入口。</p>
+          </div>
+
+          <div class="diagram-frame platform-map">
+            <div class="platform-center">
+              <h3>Store</h3>
+              <p>唯一真相源</p>
+            </div>
+            <div class="platform-card claude">
+              <h3>Claude Code</h3>
+              <p class="platform-entry"><code>~/.claude/CLAUDE.md</code> + repo <code>CLAUDE.md</code></p>
+              <p class="platform-note">projection 进入项目 memory 体系，可用 hooks 做当天补充</p>
+            </div>
+<div class="platform-card openclaw">
+              <h3>OpenClaw</h3>
+              <p class="platform-entry"><code>MEMORY.md</code> + <code>memory/YYYY-MM-DD.md</code></p>
+              <p class="platform-note">workspace 本身就是落点</p>
+            </div>
+<div class="platform-card codex">
+              <h3>Codex</h3>
+              <p class="platform-entry"><code>AGENTS.md</code> + <code>config.toml</code> + MCP</p>
+              <p class="platform-note">不能只放 projection 文件，必须写到它会发现的入口</p>
+            </div>
+<div class="platform-card chatgpt">
+              <h3>ChatGPT</h3>
+              <p class="platform-entry">project files / instructions / memory</p>
+              <p class="platform-note">只吃你送进去的 summary，送达状态要单独记录</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="example" class="section">
+          <div class="section-heading">
+            <p class="eyebrow">Real Example</p>
+            <h2>一个真实例子的文件变化图</h2>
+            <p>用户说：文档少用抽象句式，每节保留 1 个例子。</p>
+          </div>
+
+          <div class="example-map">
+            <div class="example-column">
+              <div class="example-head">Step 1</div>
+              <h3>Capture</h3>
+              <code>kb/inbox/2026-04-03-writing-style.md</code>
+<code>kb/daily/2026-04-03.md</code>
+              <p>先记 correction item，再在 daily 里留下候选决策。</p>
+            </div>
+<div class="example-bridge">same day</div>
+<div class="example-column">
+              <div class="example-head">Step 2</div>
+              <h3>Projections</h3>
+              <code>projections/claude/CLAUDE.memory.md</code>
+<code>projections/openclaw/MEMORY.md</code>
+<code>codex-repo/AGENTS.md</code>
+<code>projections/chatgpt/project-summary.md</code>
+              <p>前三个同天刷新，ChatGPT 只生成 summary，并标记 pending。</p>
+            </div>
+<div class="example-bridge">later</div>
+<div class="example-column">
+              <div class="example-head">Step 3</div>
+              <h3>Store</h3>
+              <code>kb/profile/user.md</code>
+<code>kb/decisions/phase-1-kb-first.md</code>
+<code>kb/projects/personal-memory-system.md</code>
+              <p>晚些时候再 Consolidate，把规则写进 Store，关闭 inbox item。</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="build" class="section">
+          <div class="section-heading">
+            <p class="eyebrow">Build Plan</p>
+            <h2>这个项目真正要开发什么</h2>
+            <p>先把结构和同步做对，再做 fancy retrieval。</p>
+          </div>
+
+          <div class="build-rails">
+            <div class="build-track">
+              <h3>Phase 1</h3>
+              <p>Capture / Store / Projections 结构、文件操作、模板、例子。</p>
+            </div>
+<div class="build-track">
+              <h3>Phase 2</h3>
+              <p>导入器、source refs、normalization、correction lifecycle。</p>
+            </div>
+<div class="build-track">
+              <h3>Phase 3</h3>
+              <p>Consolidate jobs、conflict handling、archive routing。</p>
+            </div>
+<div class="build-track">
+              <h3>Phase 4+</h3>
+              <p>platform sync、MCP、optional indexes、evolve pipeline。</p>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
