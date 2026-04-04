@@ -34,6 +34,32 @@
 - [docs/implementation/obsidian-kb-sop.md](docs/implementation/obsidian-kb-sop.md)
 - [docs/implementation/roadmap.md](docs/implementation/roadmap.md)
 
+## 可视化方案页
+
+页面源码和生成结果在：
+
+- [site/content.md](site/content.md)
+- [site/diagrams/](site/diagrams/)
+- [site/index.html](site/index.html)
+
+本地预览：
+
+```bash
+python3 -m http.server 8126 --bind 127.0.0.1 -d site
+```
+
+然后打开：
+
+```text
+http://127.0.0.1:8126
+```
+
+GitHub Pages 发布后，页面地址会是：
+
+```text
+https://dxxbb.github.io/memory_system/
+```
+
 ## 仓库结构
 
 ```text
