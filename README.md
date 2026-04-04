@@ -60,6 +60,9 @@ GitHub Pages 发布后，页面地址会是：
 https://dxxbb.github.io/memory_system/
 ```
 
+当前仓库还是 private，而这个账号计划不支持 private repo 的 GitHub Pages。
+所以现在这套 workflow 已经准备好了，但要等仓库改成 public，或者账号升级到支持 private Pages 的计划后，才能真正启用。
+
 ## 仓库结构
 
 ```text
