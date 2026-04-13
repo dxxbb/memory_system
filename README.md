@@ -18,7 +18,8 @@
 - 外层管线(watcher / dispatcher / deps / approve)是确定性代码，内层判断由 agent + guideline 做
 - 依赖关系声明在每个 derived 文件的 frontmatter 里(`kind:` / `upstream:`)，`deps.py` 反向算传播
 - PR 支持三种出口：approve、reject、request-changes(带 comment 多轮往返)
-- watcher 只扫 main，用 commit trailer(`Approved-by:` / `Rebuilt-by:`)跳过系统自己产的 commit
+- `system/**` 是 control plane，只能由固定脚本和 system agent 写
+- watcher 只扫 main，并跳过带 `Approved-by:` / `Rebuilt-by:` / `System-owned-by:` 的系统提交
 
 前几版(`knowledge base` 优先 + `Capture / Workspace / Store / Projections` 四层)的核心判断仍然有效，但作为 personal OS 里的一个子系统(memory 层)落在 `knowledge base/` + `user/` + `workspace/` 里。
 

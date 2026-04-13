@@ -131,17 +131,38 @@ watcher 每次把无 frontmatter 的文件视为 source 时，要在 log 里记 
 
 ## 4. Agent 写入权限
 
-### 4.1 可直写（无需 review）
+### 4.1 `system/**` 是受控写入区
+
+`system/**` 不属于普通 source event 流，而属于 **control plane**。
+
+这意味着两条硬规则：
+
+1. `system/**` 默认不被 watcher 当作事件源
+2. `system/**` 只能由固定脚本和 `system agent` 写
+
+固定写入入口只有这些：
+
+- `watch.py` 写 `system/monitor-inbox/`
+- `dispatch.py` 改 inbox 状态
+- `approve.py` / `reject.py` / `request-changes.py` 写 `system/change-log/`、`system/change-request/`
+- `request-changes.py` 在需要时入队 `pr_revision`
+
+普通 agent、普通工作流、人工日常内容都不应该直接改 `system/**`。
+
+### 4.2 可直写（无需 review）
 
 这些目录是"人还没消化过的原材料"或"系统自己的工作队列"，agent 可以直接写文件并 commit 到 main：
 
-- `system/monitor-inbox/` —— agent 的工作队列
-- `system/change-log/` —— append-only 审计
 - `conversation memory/` —— 对话原始回流
 - `ingest src/` —— 外部原材料捕获(clipper、book 摘录等)
 - `assist/preference/improve/learning inbox/` —— 待审的偏好观察
 
-### 4.2 必须走 PR
+这里要注意：
+
+- `system/monitor-inbox/` 和 `system/change-log/` 虽然也写在 main 上，但它们不属于“普通 agent 可直写”
+- 它们只属于 `system-owned`
+
+### 4.3 必须走 PR
 
 其他一切都必须经过 PR。关键列表：
 
@@ -153,11 +174,15 @@ watcher 每次把无 frontmatter 的文件视为 source 时，要在 log 里记 
 - `system/operating-rule/` —— agent 不能自己改游戏规则
 - `config store/` —— 秘钥和配置，agent 碰都不该碰
 
-### 4.3 设计原则
+### 4.4 设计原则
 
 **凡是下游有依赖传播或对 AI 行为有直接影响的文件，必须走 PR；凡是纯粹的 inbox / scratch / log 性质的文件，agent 可以直接写。**
 
 这条原则不允许例外。workspace 看起来像 scratch，但它是你的活跃工作区，agent 悄悄修改会污染你的判断 —— 所以归到 PR 侧。
+
+再补一条更硬的规则：
+
+**凡是 `system/**` 下的控制面文件，必须走固定脚本入口，不能靠普通 agent 自由写。**
 
 ## 5. PR 工作流
 
@@ -211,7 +236,7 @@ Trailers 的约定：
 
 - `scripts/approve.py pr/0001` —— 跑 `deps.py`、rebuild 所有下游 derived 文件、在 branch 上加一个 "Rebuild derived files" 的 commit、squash merge 进 main、删 branch、更新 change log
 - `scripts/reject.py pr/0001 --reason "..."` —— `git branch -D`、reason 写进 change log
-- `scripts/request-changes.py pr/0001` —— 起编辑器让人写 comment，把 comment commit 到 branch 上的 `system/pr-review/pr-0001-comments-round<N>.md`，在 inbox 写一条 `event_type: pr_revision` 的新 TODO
+- `scripts/request-changes.py pr/0001` —— 起编辑器让人写 comment，把 comment commit 到 branch 上的 `system/pr-review/pr-0001-comments-round<N>.md`，然后**直接入队**一条 `event_type: pr_revision` 的 TODO
 
 ### 5.6 Comment 往返机制
 
@@ -228,10 +253,10 @@ Trailers 的约定：
 **request-changes 的 dispatcher 路径**：
 
 1. 人跑 `request-changes.py pr/0001`，写 comment
-2. 脚本 commit comment 文件到 branch，在 inbox 产 `event_type: pr_revision` 的 TODO，frontmatter 带 `pr_branch: pr/0001`、`comment_file: system/pr-review/pr-0001-comments-round1.md`、`round: 1`
+2. 脚本 commit comment 文件到 branch，然后直接在 `system/monitor-inbox/` 入队一条 `event_type: pr_revision` 的 TODO，frontmatter 带 `pr_branch: pr/0001`、`comment_file: system/pr-review/pr-0001-comments-round1.md`、`round: 1`
 3. 下次 `dispatch.py` 跑，取到这条 TODO，启动 agent 并加载 `events/pr_revision.md`
 4. agent checkout 到 `pr/0001` branch，读 comment、读原始 commit message、按 comment 修改或产 response
-5. agent 在 inbox 写 `event_type: pr_ready_for_rereview` 的结束标记
+5. `dispatch.py` 或专门脚本更新 inbox 状态；agent 不直接在 main 上改队列文件
 
 ### 5.7 Squash merge
 
@@ -257,24 +282,31 @@ watcher 在 `system/.watcher-state`(或 `.watcher-state.json`)里维护一个 `l
 
 这个 state 文件不进 git，`.gitignore` 排除。
 
-### 6.3 跳过 approve.py 产的 commit
+### 6.3 跳过系统自产生的 commit
 
 watcher 对每个新 commit 检查 commit message 的 trailer：
 
 - 有 `Approved-by: approve.py pr/<id>` —— 跳过
 - 有 `Rebuilt-by: approve.py pr/<id>` —— 跳过
+- 有 `System-owned-by: watch.py` —— 跳过
+- 有 `System-owned-by: dispatch.py` —— 跳过
+- 有 `System-owned-by: request-changes.py` —— 跳过
 - 否则 —— 按正常规则处理
 
 `approve.py` 在产 squash merge commit 时必须带 `Approved-by:` trailer。
+
+其他系统脚本写到 main 的 commit，也必须带 `System-owned-by:` trailer。
 
 ### 6.4 事件分类
 
 watcher 对不跳过的 commit，遍历 diff 里涉及的每个文件：
 
-1. 打开文件读 frontmatter，获取 `kind:`
-2. 如果 `kind: derived` —— 跳过(derived 改动是下游，不触发新事件)
-3. 如果 `kind: source` 或无 frontmatter —— 继续分类
-4. 按路径前缀决定 `event_type`：
+1. 如果路径在 `system/**` —— 直接跳过
+2. 打开文件读 frontmatter，获取 `kind:`
+3. 如果 `kind: derived` —— 跳过(derived 改动是下游，不触发新事件)
+4. 如果 `kind: system` —— 跳过
+5. 如果 `kind: source` 或无 frontmatter —— 继续分类
+6. 按路径前缀决定 `event_type`：
 
    | 路径前缀 | event_type |
    |---|---|
@@ -286,12 +318,13 @@ watcher 对不跳过的 commit，遍历 diff 里涉及的每个文件：
    | `workspace/reading/**` | `reading_update` |
    | `workspace/writing/**` | `writing_update` |
    | `ingest src/**` | `ingest` |
-   | `system/monitor-inbox/**` 且 `event_type: pr_revision` | `pr_revision` |
    | 其他 | `unclassified` |
 
-5. 在 `system/monitor-inbox/` 写一个 TODO 文件
+7. 在 `system/monitor-inbox/` 写一个 TODO 文件
 
 MVP 阶段 guideline 只覆盖 `conversation` 和 `pr_revision` 两类，其他类别的 TODO 被 dispatcher 路由到 `unclassified` handler(规则是"记一条 log 然后 skip")。
+
+这里的 `pr_revision` 不是 watcher 扫出来的，而是 `request-changes.py` 直接入队的。
 
 ## 7. Change request 队列的组织
 

@@ -93,10 +93,11 @@ system/.watcher-state
 1. 读 `system/.watcher-state` 的 `last_seen_commit`，默认 `HEAD~50`
 2. `git log <last_seen_commit>..HEAD --format=...` 取所有新 commit
 3. 对每个 commit：
-   - 读 commit message，如果 trailer 里有 `Approved-by:` 或 `Rebuilt-by:`，跳过
+   - 读 commit message，如果 trailer 里有 `Approved-by:`、`Rebuilt-by:` 或 `System-owned-by:`，跳过
    - 取 diff 涉及的文件列表
-   - 对每个文件：打开读 frontmatter，判断 `kind:`
-   - `kind: derived` → 跳过
+   - 对每个文件：如果路径在 `system/**`，直接跳过
+   - 否则打开读 frontmatter，判断 `kind:`
+   - `kind: derived` 或 `kind: system` → 跳过
    - `kind: source` 或无 frontmatter → 按路径前缀分类
 4. 为每个未跳过的事件在 `system/monitor-inbox/` 产一个 TODO markdown
 5. 更新 `last_seen_commit` 到 HEAD
@@ -105,7 +106,7 @@ system/.watcher-state
 
 ```yaml
 ---
-kind: source
+kind: system
 id: 0001
 status: todo
 event_type: conversation
@@ -124,11 +125,12 @@ created_at: 2026-04-13T14:20:00
 **输入**：无
 **行为**：
 1. 扫 `system/monitor-inbox/*.md`，按 `id` 排序取最早的 `status: todo`
-2. 读 frontmatter 的 `event_type`
-3. 读 `global.md + events/<event_type>.md`，拼成 agent 的指令文本
-4. 启动 Claude Code：`claude "<指令文本>\n当前任务：处理 <inbox path>"`
-5. agent 跑完后：dispatcher 不做状态更新(由 agent 自己在 inbox 文件里把 `status: todo` 改成 `done`，或追加新的 inbox 项)
-6. 如果 `event_type` 不在 MVP 范围内(`unclassified`、`daily_memo` 等)，直接标记 `status: skipped`，在 change log 写一行
+2. 把它改成 `status: running`，写回 main，并带 `System-owned-by: dispatch.py`
+3. 读 frontmatter 的 `event_type`
+4. 读 `global.md + events/<event_type>.md`，拼成 agent 的指令文本
+5. 启动 Claude Code：`claude "<指令文本>\n当前任务：处理 <inbox path>"`
+6. agent 跑完后：dispatcher 不直接改业务文件，只由脚本负责把 inbox 状态推进到 `done / skipped / unsure / waiting_rereview`
+7. 如果 `event_type` 不在 MVP 范围内(`unclassified`、`daily_memo` 等)，直接标记 `status: skipped`，在 change log 写一行
 
 预计行数：**60 行**以内。
 
@@ -144,13 +146,13 @@ created_at: 2026-04-13T14:20:00
   - 每个 PR 只能改一个 source 文件
   - 不许修改 `user/`、`knowledge base/`、`config store/`、`system/operating-rule/`、`assist/preference/current/`
   - 不许直接写 derived 文件(`kind: derived`)；derived 由 approve.py 自动 rebuild
+  - 不许直接修改 `system/**`；`system/**` 只能通过固定脚本入口改动
 - 出错时的 fallback：
   - 如果你不确定怎么处理一个 inbox 项 → 在 change log 写一行 "unsure: <reason>"，把 inbox 项标记为 `unsure` 状态，交给人决定
   - 如果你发现 guideline 本身有问题 → 不要自己改 `operating-rule/`，而是在 change log 写一行 "guideline-issue: <desc>"，人会来处理
 - 出结束标记的约定：
-  - 任务完成 → 把 inbox 项的 `status: todo` 改为 `done`，追加 `completed_at:` 字段
-  - 任务跳过 → 改为 `skipped`，追加 `skip_reason:`
-  - 任务不确定 → 改为 `unsure`，追加 `unsure_reason:`
+  - agent 不直接在 `main` 上改 inbox 文件
+  - 需要变更状态时，由 `dispatch.py` 或其他系统脚本代写，并带 `System-owned-by:` trailer
 
 预计行数：**60 行**以内。
 
@@ -174,7 +176,7 @@ created_at: 2026-04-13T14:20:00
      - `git checkout -b pr/<自增id>-<短描述>`
      - 编辑 `assist/sp/master.md`
      - `git commit` 用下面的 template
-     - 回到 main，更新 inbox 项状态为 `done`，在正文里注明 PR branch
+     - 回到 main 后，由系统脚本更新 inbox 状态为 `done`，并记录 PR branch
 - Commit message template：
 
   ```
@@ -213,7 +215,7 @@ created_at: 2026-04-13T14:20:00
   5. 判断 comment 是否合理：
      - 合理且能满足 → 修改相关文件，`git commit` 一条 "Addresses: <comment_file>" 的新 commit
      - 不合理或和原意冲突 → 在 branch 上新建 `system/pr-review/pr-<id>-response-round<N>.md` 写 counter-argument，commit
-  6. 回到 main，在 inbox 写新 TODO `event_type: pr_ready_for_rereview`，frontmatter 带 `pr_branch`、`round`(递增)
+  6. 回到 main 后，由系统脚本入队新 TODO `event_type: pr_ready_for_rereview`，frontmatter 带 `pr_branch`、`round`(递增)
 - Round 上限约束：
   - 如果 `round >= 3`，response 文件里必须明确写 "我认为我们在原地打转，建议 reject 或明确改写成 ..."
 - 允许改的文件：
