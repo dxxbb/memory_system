@@ -65,7 +65,7 @@ python3 scripts/build_site.py        # 重新生成 site/index.html
 python3 -m http.server 8126 --bind 127.0.0.1 -d site   # 本地预览
 ```
 
-GitHub Pages: <https://dxxbb.github.io/memory_system/>
+GitHub Pages: <https://dxxbb.github.io/personal_os/>
 
 ## MVP 最小闭环
 
