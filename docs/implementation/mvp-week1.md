@@ -120,19 +120,25 @@ created_at: 2026-04-13T14:20:00
 
 预计行数：**120 行**以内。
 
-### 3.4 `scripts/dispatch.py`
+### 3.4 Agent monitor 流程（取代 `scripts/dispatch.py`）
 
-**输入**：无
-**行为**：
-1. 扫 `system/monitor-inbox/*.md`，按 `id` 排序取最早的 `status: todo`
-2. 把它改成 `status: running`，写回 main，并带 `System-owned-by: dispatch.py`
-3. 读 frontmatter 的 `event_type`
-4. 读 `global.md + events/<event_type>.md`，拼成 agent 的指令文本
-5. 启动 Claude Code：`claude "<指令文本>\n当前任务：处理 <inbox path>"`
-6. agent 跑完后：dispatcher 不直接改业务文件，只由脚本负责把 inbox 状态推进到 `done / skipped / unsure / waiting_rereview`
+Agent（Claude Code）是 OS 的主调度者，不是被脚本启动的。默认每天 monitor 1 次。
+
+**触发方式**：
+- MVP 阶段：人手动对 Claude Code 说 "monitor OS"（或等价指令）
+- Phase 2+：通过 cron / launchd 定时触发
+
+**Agent monitor 时的行为**：
+1. 运行 `python3 scripts/watch.py` 扫描新 commit，产生 inbox TODO
+2. 读 `system/monitor-inbox/*.md`，按 `id` 排序取最早的 `status: todo`
+3. 把它改成 `status: running`
+4. 读 frontmatter 的 `event_type`，加载 `global.md + events/<event_type>.md` 作为处理规则
+5. 按 guideline 执行：读触发源、评估、判断、在 `pr/<id>-...` branch 上产 commit（如果需要）
+6. 更新 inbox 状态为 `done / skipped / unsure / waiting_rereview`
 7. 如果 `event_type` 不在 MVP 范围内(`unclassified`、`daily_memo` 等)，直接标记 `status: skipped`，在 change log 写一行
+8. 如果 inbox 里还有 `status: todo` 的项，继续处理下一条
 
-预计行数：**60 行**以内。
+**注意**：`scripts/dispatch.py` 不再作为独立脚本存在。Agent 直接读写 inbox 文件，使用 `watch.py` 和 `deps.py` 作为工具。
 
 ### 3.5 `system/operating-rule/global.md`
 
@@ -151,8 +157,8 @@ created_at: 2026-04-13T14:20:00
   - 如果你不确定怎么处理一个 inbox 项 → 在 change log 写一行 "unsure: <reason>"，把 inbox 项标记为 `unsure` 状态，交给人决定
   - 如果你发现 guideline 本身有问题 → 不要自己改 `operating-rule/`，而是在 change log 写一行 "guideline-issue: <desc>"，人会来处理
 - 出结束标记的约定：
-  - agent 不直接在 `main` 上改 inbox 文件
-  - 需要变更状态时，由 `dispatch.py` 或其他系统脚本代写，并带 `System-owned-by:` trailer
+  - Agent 在处理完 inbox 项后，直接更新其 frontmatter 状态（`done / skipped / unsure / waiting_rereview`）
+  - inbox 状态变更的 commit 带 `System-owned-by: agent-monitor` trailer
 
 预计行数：**60 行**以内。
 
@@ -322,11 +328,12 @@ MVP 里 rebuild 逻辑不追求完美，追求"能跑完一次 demo 即可"。Ph
 2. **(人工)** 把 transcript 保存成 `conversation memory/2026-04-13/claude-code.md`，`git add && git commit -m "Save conversation 2026-04-13"`
 3. **(人工)** 运行 `python3 scripts/watch.py`
    - 预期：`system/monitor-inbox/0001-conversation.md` 出现，`event_type: conversation`，指向刚才的 transcript 文件
-4. **(人工)** 运行 `python3 scripts/dispatch.py`
-   - 预期：Claude Code 启动，读 `global.md + events/conversation.md + inbox item`，读对话 transcript
-   - 预期：agent 识别出 "没有先确认假设" 这个 pattern，判断这是 SP 层的问题
-   - 预期：agent `git checkout -b pr/0001-add-assumption-check`，编辑 `sp/master.md`，commit
-   - 预期：agent 回到 main，更新 inbox 项为 done，在正文注明 `pr/0001-add-assumption-check`
+4. **(人工)** 对 Claude Code 说 "monitor OS"（或等价指令）
+   - 预期：Agent 运行 `watch.py`（如果步骤 3 未手动运行），扫到新 commit，inbox 里出现 TODO
+   - 预期：Agent 读 `global.md + events/conversation.md + inbox item`，读对话 transcript
+   - 预期：Agent 识别出 "没有先确认假设" 这个 pattern，判断这是 SP 层的问题
+   - 预期：Agent `git checkout -b pr/0001-add-assumption-check`，编辑 `sp/master.md`，commit
+   - 预期：Agent 回到 main，更新 inbox 项为 done，在正文注明 `pr/0001-add-assumption-check`
 5. **(人工)** `git diff main...pr/0001-add-assumption-check` 查看改动
 6. **(人工)** 运行 `python3 scripts/approve.py pr/0001-add-assumption-check`
    - 预期：`approve.py` 用 `deps.py` 算出 `view/claude-code/CLAUDE.md` 是 `sp/master.md` 的下游
@@ -356,7 +363,7 @@ MVP 里 rebuild 逻辑不追求完美，追求"能跑完一次 demo 即可"。Ph
 
 - 仓库骨架：30 分钟
 - `global.md` + 两个 events 文件：1-2 小时
-- `deps.py` + `watch.py` + `dispatch.py`：半天
+- `deps.py` + `watch.py`：3-4 小时
 - `approve.py`：半天
 - `reject.py` + `request-changes.py`：1-2 小时
 - 第一次端到端跑通 + 调试：1 小时到半天(看第一次跑遇到什么)

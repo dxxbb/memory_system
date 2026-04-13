@@ -21,7 +21,7 @@
 - 真相源：人或 agent 手写的 `kind: source` 文件
 - 产出：由依赖图自动重建的 `kind: derived` 文件
 - 触发：watcher 扫 main 的 git diff，按 frontmatter 分类
-- 调度：dispatcher 从 inbox 取 TODO，启动 agent + 相关 guideline
+- 调度：agent（Claude Code）定期 monitor OS（默认每天 1 次），运行 watch.py 扫描变更，读 inbox + guideline 直接处理
 - 判断：agent 产 PR，commit 到 `pr/*` branch
 - Review：人 `git diff` 看 PR，三种出口(approve / reject / request-changes)
 - 落盘：`approve.py` 跑 rebuild、squash merge、写 change log
@@ -68,13 +68,15 @@
                                                                                   └───────────┘
 ```
 
+> **注意**：上图中的 `dispatcher` 组件已取消。当前模型中 agent（Claude Code）定期 monitor OS（默认每天 1 次），直接承担扫描、调度、处理三个角色，使用 `watch.py` 等脚本作为工具。
+
 **数据流**：
 
 1. 人或 agent 写一个 `kind: source` 文件并 commit 到 main
-2. `watch.py` 扫 `git log main`，按 frontmatter 给每个 diff 分类，在 `system/monitor-inbox/` 产一个 TODO
-3. `dispatch.py` 从 inbox 取最早一条 TODO，启动 agent(Claude Code)，加载 `global.md + events/<event_type>.md`
-4. agent 按 guideline 的规则处理：读触发源、判断、可能在 `pr/<id>-...` branch 上产 commit
-5. agent 在 inbox 写结束标记，或直接将 inbox 项从 todo 改为 done
+2. Agent（Claude Code）定期 monitor OS（默认每天 1 次），运行 `watch.py` 扫 `git log main`，按 frontmatter 给每个 diff 分类，在 `system/monitor-inbox/` 产 TODO
+3. Agent 读 inbox 里最早的 `status: todo` 项，加载 `global.md + events/<event_type>.md` 作为处理规则
+4. Agent 按 guideline 的规则处理：读触发源、判断、可能在 `pr/<id>-...` branch 上产 commit
+5. Agent 更新 inbox 状态（done / skipped / unsure / waiting_rereview），在 change log 写一行
 6. 人看 inbox 里的 "ready for review"，`git diff main...pr/<id>`
 7. 人三选一：approve / reject / request-changes
 8. approve 的话，`approve.py` 跑 `deps.py` 算下游，rebuild derived 文件，squash merge 进 main，删 branch，写 change log
@@ -142,8 +144,8 @@ watcher 每次把无 frontmatter 的文件视为 source 时，要在 log 里记 
 
 固定写入入口只有这些：
 
-- `watch.py` 写 `system/monitor-inbox/`
-- `dispatch.py` 改 inbox 状态
+- `watch.py` 写 `system/monitor-inbox/`（由 agent 调用）
+- Agent 在处理 inbox 项后直接更新其状态
 - `approve.py` / `reject.py` / `request-changes.py` 写 `system/change-log/`、`system/change-request/`
 - `request-changes.py` 在需要时入队 `pr_revision`
 
@@ -250,13 +252,13 @@ Trailers 的约定：
 
 **Round 上限**：没有硬上限。guideline 要求 agent 在 `round >= 3` 时主动喊停，在 response 里明确说"我认为我们在原地打转，建议 reject 或明确改写成 ..."，强迫 agent 在多轮无果时停。
 
-**request-changes 的 dispatcher 路径**：
+**request-changes 路径**：
 
 1. 人跑 `request-changes.py pr/0001`，写 comment
 2. 脚本 commit comment 文件到 branch，然后直接在 `system/monitor-inbox/` 入队一条 `event_type: pr_revision` 的 TODO，frontmatter 带 `pr_branch: pr/0001`、`comment_file: system/pr-review/pr-0001-comments-round1.md`、`round: 1`
-3. 下次 `dispatch.py` 跑，取到这条 TODO，启动 agent 并加载 `events/pr_revision.md`
-4. agent checkout 到 `pr/0001` branch，读 comment、读原始 commit message、按 comment 修改或产 response
-5. `dispatch.py` 或专门脚本更新 inbox 状态；agent 不直接在 main 上改队列文件
+3. Agent 下次 monitor 时，取到这条 TODO，加载 `events/pr_revision.md` 作为处理规则
+4. Agent checkout 到 `pr/0001` branch，读 comment、读原始 commit message、按 comment 修改或产 response
+5. Agent 处理完成后更新 inbox 状态
 
 ### 5.7 Squash merge
 
@@ -289,7 +291,7 @@ watcher 对每个新 commit 检查 commit message 的 trailer：
 - 有 `Approved-by: approve.py pr/<id>` —— 跳过
 - 有 `Rebuilt-by: approve.py pr/<id>` —— 跳过
 - 有 `System-owned-by: watch.py` —— 跳过
-- 有 `System-owned-by: dispatch.py` —— 跳过
+- 有 `System-owned-by: agent-monitor` —— 跳过
 - 有 `System-owned-by: request-changes.py` —— 跳过
 - 否则 —— 按正常规则处理
 
@@ -360,14 +362,14 @@ system/operating-rule/
     └── ...
 ```
 
-### 8.2 dispatcher 的载入逻辑
+### 8.2 agent 的 guideline 载入
 
 ```python
 def load_guideline(event_type: str) -> str:
     return read("global.md") + "\n\n" + read(f"events/{event_type}.md")
 ```
 
-dispatcher 把这份组合文本作为 agent 启动时的 system prompt(或放进 `CLAUDE.md` 的临时覆盖)，加上 inbox TODO 的内容作为当前任务。
+Agent 在处理每个 inbox 项时，直接读取 `global.md + events/<event_type>.md` 作为处理规则，加上 inbox TODO 的内容作为当前任务。载入过程发生在 agent session 内部，不需要外部脚本拼接。
 
 ### 8.3 global.md 的内容范围
 
