@@ -262,39 +262,25 @@ last_rebuild_at: 2026-04-13T00:00:00
 - 不确定的事先说不确定
 ```
 
-说明：MVP 第一次跑 `approve.py` 之前，这份文件可以手工初始化。`section detail/me.md` 同理，用手工初始化的方式填一个最小版本，upstream 指向 `user/about me/me.md`。
+说明：MVP 第一次闭环之前，这份文件和 `section detail/` 的各 fragment 手工初始化为空占位即可。第一次真正的 conversation PR 由 agent 在 branch 上填充实际内容。
 
 ### 3.9 `scripts/approve.py`
 
+**重要**：approve.py 是**纯 squash merge 工具**，不跑 rebuild。Rebuild 由 agent 在 PR branch 上按 `section-rebuild.md` / `sp-rebuild.md` / `view-rebuild.md` 的步骤完成，PR diff 已经包含从 section detail 到 view 的完整改动。
+
 **输入**：`pr/<branch-name>`
 **行为**：
-1. 断言当前 main 是 clean(没有 uncommitted changes)
-2. `git checkout <branch>`
-3. 检查这个 branch 相对 main 改了哪些文件，用 `deps.py` 拿到每个 source 文件的 `kind`
-4. 断言最多只有 1 个 `kind: source` 文件被改(MVP 约束)
-5. 用 `deps.py --downstream <source>` 算出所有要 rebuild 的 derived 文件
-6. 对每个 derived 文件：
-   - 读它的 `upstream:`
-   - 根据 upstream 内容调用 rebuild 逻辑重新生成该 derived
-   - MVP 里 rebuild 逻辑是**简单拼接**或**调用一次 Claude 做"基于 upstream 产出 downstream"**(由 guideline 决定)
-   - 更新 frontmatter 的 `last_rebuild_at` 和 `generated_by`
-7. `git add <all rebuilt derived files>`
-8. `git commit -m "Rebuild derived files for pr/<id>\n\nRebuilt-by: approve.py pr/<id>"`
-9. `git checkout main`
-10. `git merge --squash <branch>`
-11. `git commit -m "<原始 PR 的标题>\n\n<原始 PR 的正文>\n\nApproved-by: approve.py pr/<id>"`
-12. `git branch -D <branch>`
-13. 在 `system/change-log/` append 一行
-14. 在 `system/monitor-inbox/` 把对应的 `pr_ready_for_rereview` 或原始 `conversation` TODO 标记为 done(如果还没被 agent 标记)
+1. 断言当前 base 分支（master 或 main，自动检测）是 clean
+2. 断言 pr branch 存在且有 commits ahead of base
+3. 读 PR 第一个 commit 的 title/body（agent 写的带 Trigger/Category/Affects-downstream trailer 的 message）
+4. `git merge --squash <branch>`
+5. `git commit -m "<title>\n\n<body>\n\nApproved-by: approve.py pr/<id>"`
+6. `git branch -D <branch>`
+7. 在 `system/change-log/<YYYY-MM>.md` append 一行
+8. 把对应 inbox TODO 的 `status` 改为 `done`、加 `pr_branch` 和 `merged_at` 字段
+9. Commit 上述 system 改动，带 `System-owned-by: approve.py pr/<id>` trailer
 
-**rebuild 逻辑的 MVP 简化**：
-- 对 `section detail/me.md`：读 `user/about me/me.md` 全文，直接复制进去(或用 Claude 做简短摘要)
-- 对 `sp/master.md`：不自动 rebuild，因为 sp 的 "工作方式" 段落需要保留历史规则，PR 直接 commit 的新版就是最终版
-- 对 `view/claude-code/CLAUDE.md`：读 `sp/master.md` 全文，按 CLAUDE.md 的格式包装
-
-MVP 里 rebuild 逻辑不追求完美，追求"能跑完一次 demo 即可"。Phase 2 再设计合适的模板。
-
-预计行数：**150 行**以内(含 rebuild 逻辑)。
+预计行数：**~230 行**（含 yaml 解析、错误提示、auto-detect 默认分支）。
 
 ### 3.10 `scripts/reject.py`
 
@@ -336,11 +322,11 @@ MVP 里 rebuild 逻辑不追求完美，追求"能跑完一次 demo 即可"。Ph
    - 预期：Agent 回到 main，更新 inbox 项为 done，在正文注明 `pr/0001-add-assumption-check`
 5. **(人工)** `git diff main...pr/0001-add-assumption-check` 查看改动
 6. **(人工)** 运行 `python3 scripts/approve.py pr/0001-add-assumption-check`
-   - 预期：`approve.py` 用 `deps.py` 算出 `view/claude-code/CLAUDE.md` 是 `sp/master.md` 的下游
-   - 预期：`CLAUDE.md` 被 rebuild，branch 上出现 rebuild commit
-   - 预期：branch squash merge 进 main，commit message 带 `Approved-by:`
+   - 预期：PR 已包含 section detail / sp / view 跨层改动（agent 在 step 4 完成）
+   - 预期：`approve.py` 做纯 squash merge，commit message 带 `Approved-by:`
    - 预期：branch 被删
    - 预期：change log 追加一行
+   - 预期：对应 inbox TODO 被标 `done`
 7. **(人工)** 打开新 Claude Code session
    - 预期：session 读到的 `CLAUDE.md` 是新版，包含"先确认假设"的规则
    - 预期：在类似情境下，agent 的行为已经改变
@@ -356,7 +342,7 @@ MVP 里 rebuild 逻辑不追求完美，追求"能跑完一次 demo 即可"。Ph
 ### 允许 MVP 失败但要记录的情况
 
 - agent 误判对话的 root cause，产出无意义的 PR → **接受**，你 reject 它，这说明 guideline 需要改进，而不是系统不 work
-- `approve.py` rebuild 出的 `CLAUDE.md` 格式不好看 → **接受**，MVP 不追求 rebuild 模板完美
+- agent 在 PR branch 上生成的 `CLAUDE.md` 格式不好看 → **接受**，MVP 不追求 rebuild 模板完美
 - commit message trailer 格式和预期有偏差 → **不接受**，trailer 是 watcher 的依据，必须严格
 
 ## 5. 时间预算

@@ -43,7 +43,14 @@ def vault_root() -> Path:
 
 
 def git(root: Path, *args: str) -> str:
-    return subprocess.check_output(["git", "-C", str(root), *args], text=True)
+    result = subprocess.run(
+        ["git", "-C", str(root), *args], text=True, capture_output=True
+    )
+    if result.returncode != 0:
+        raise subprocess.CalledProcessError(
+            result.returncode, result.args, result.stdout, result.stderr
+        )
+    return result.stdout
 
 
 def classify(path: str) -> str:
