@@ -48,6 +48,16 @@ def git(root: Path, *args: str) -> str:
     return result.stdout
 
 
+def default_branch(root: Path) -> str:
+    for name in ("master", "main"):
+        try:
+            git(root, "rev-parse", "--verify", f"refs/heads/{name}")
+            return name
+        except RuntimeError:
+            continue
+    raise RuntimeError("no master or main branch found in vault")
+
+
 def append_change_log(root: Path, pr_id: str, reason: str) -> None:
     log_dir = root / CHANGE_LOG_DIR
     log_dir.mkdir(parents=True, exist_ok=True)
@@ -136,9 +146,10 @@ def main() -> int:
         return 2
 
     try:
+        base = default_branch(root)
         head = git(root, "symbolic-ref", "--short", "HEAD").strip()
-        if head != "main":
-            sys.stderr.write(f"not on main (current: {head})\n")
+        if head != base:
+            sys.stderr.write(f"not on {base} (current: {head})\n")
             return 1
         if not git(root, "branch", "--list", branch).strip():
             sys.stderr.write(f"branch not found: {branch}\n")

@@ -51,6 +51,16 @@ def git(root: Path, *args: str) -> str:
     return result.stdout
 
 
+def default_branch(root: Path) -> str:
+    for name in ("master", "main"):
+        try:
+            git(root, "rev-parse", "--verify", f"refs/heads/{name}")
+            return name
+        except RuntimeError:
+            continue
+    raise RuntimeError("no master or main branch found in vault")
+
+
 def next_round(root: Path, pr_id: str) -> int:
     d = root / PR_REVIEW_DIR
     if not d.is_dir():
@@ -144,12 +154,13 @@ def main() -> int:
         return 2
 
     try:
+        base = default_branch(root)
         head = git(root, "symbolic-ref", "--short", "HEAD").strip()
-        if head != "main":
-            sys.stderr.write(f"not on main (current: {head})\n")
+        if head != base:
+            sys.stderr.write(f"not on {base} (current: {head})\n")
             return 1
         if git(root, "status", "--porcelain").strip():
-            sys.stderr.write("main has uncommitted changes\n")
+            sys.stderr.write(f"{base} has uncommitted changes\n")
             return 1
         if not git(root, "branch", "--list", branch).strip():
             sys.stderr.write(f"branch not found: {branch}\n")
@@ -198,7 +209,7 @@ def main() -> int:
         )
         if result.returncode != 0:
             raise RuntimeError(f"commit failed:\n{result.stderr}")
-        git(root, "checkout", "main")
+        git(root, "checkout", base)
     except RuntimeError as e:
         sys.stderr.write(f"\nFAILED while committing comment: {e}\n")
         sys.stderr.write("you may need to `git checkout main` manually.\n")

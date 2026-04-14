@@ -63,6 +63,16 @@ def git(root: Path, *args: str, check: bool = True) -> str:
     return result.stdout
 
 
+def default_branch(root: Path) -> str:
+    for name in ("master", "main"):
+        try:
+            git(root, "rev-parse", "--verify", f"refs/heads/{name}")
+            return name
+        except RuntimeError:
+            continue
+    raise RuntimeError("no master or main branch found in vault")
+
+
 def parse_pr_id(branch: str) -> str:
     m = PR_ID_RE.match(branch)
     if not m:
@@ -72,13 +82,13 @@ def parse_pr_id(branch: str) -> str:
     return m.group(1)
 
 
-def assert_clean_main(root: Path) -> None:
+def assert_clean_base(root: Path, base: str) -> None:
     head = git(root, "symbolic-ref", "--short", "HEAD").strip()
-    if head != "main":
-        raise RuntimeError(f"not on main (current: {head}). checkout main first.")
+    if head != base:
+        raise RuntimeError(f"not on {base} (current: {head}). checkout {base} first.")
     dirty = git(root, "status", "--porcelain").strip()
     if dirty:
-        raise RuntimeError(f"main has uncommitted changes:\n{dirty}")
+        raise RuntimeError(f"{base} has uncommitted changes:\n{dirty}")
 
 
 def assert_branch_exists(root: Path, branch: str) -> None:
@@ -87,13 +97,13 @@ def assert_branch_exists(root: Path, branch: str) -> None:
         raise RuntimeError(f"branch not found: {branch}")
 
 
-def assert_branch_ahead(root: Path, branch: str) -> None:
-    commits = git(root, "rev-list", f"main..{branch}").strip()
+def assert_branch_ahead(root: Path, branch: str, base: str) -> None:
+    commits = git(root, "rev-list", f"{base}..{branch}").strip()
     if not commits:
-        raise RuntimeError(f"branch {branch} has no commits ahead of main")
+        raise RuntimeError(f"branch {branch} has no commits ahead of {base}")
 
 
-def first_pr_commit_message(root: Path, branch: str) -> tuple[str, str]:
+def first_pr_commit_message(root: Path, branch: str, base: str) -> tuple[str, str]:
     """Return (title, body) of the first PR commit (oldest on the branch).
 
     Filters out later commits like 'Review comments round N' and agent response
@@ -103,7 +113,7 @@ def first_pr_commit_message(root: Path, branch: str) -> tuple[str, str]:
         root,
         "rev-list",
         "--reverse",
-        f"main..{branch}",
+        f"{base}..{branch}",
     ).strip()
     shas = [s for s in out.splitlines() if s]
     if not shas:
@@ -230,10 +240,11 @@ def main() -> int:
         return 2
 
     try:
-        assert_clean_main(root)
+        base = default_branch(root)
+        assert_clean_base(root, base)
         assert_branch_exists(root, branch)
-        assert_branch_ahead(root, branch)
-        title, body = first_pr_commit_message(root, branch)
+        assert_branch_ahead(root, branch, base)
+        title, body = first_pr_commit_message(root, branch, base)
     except (RuntimeError, ValueError) as e:
         sys.stderr.write(f"pre-check failed: {e}\n")
         return 1
