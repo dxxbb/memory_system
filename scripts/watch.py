@@ -54,6 +54,8 @@ def git(root: Path, *args: str) -> str:
 
 
 def classify(path: str) -> str:
+    if path.startswith("conversation memory/claude code memory/"):
+        return "cc_memory"
     if path.startswith("conversation memory/"):
         return "conversation"
     if path.startswith("user/daily memo/"):
@@ -140,8 +142,28 @@ def commits_between(root: Path, since: str | None) -> list[str]:
 
 
 def files_in_commit(root: Path, rev: str) -> list[str]:
-    out = git(root, "show", "--pretty=", "--name-only", rev)
-    return [line for line in out.strip().splitlines() if line]
+    # Use name-status with rename detection so pure renames (R100) can be
+    # skipped. A rename with unchanged content should not fire a new TODO
+    # because the previous path already triggered one.
+    out = git(root, "show", "--pretty=", "--name-status", "-M", rev)
+    paths = []
+    for line in out.strip().splitlines():
+        if not line:
+            continue
+        parts = line.split("\t")
+        status = parts[0]
+        if status.startswith("R"):
+            # R100 = rename with identical content; skip. R0xx = content
+            # changed during the rename; report the new path.
+            if status == "R100":
+                continue
+            paths.append(parts[2])
+        elif status.startswith("D"):
+            # deletions can't be classified by frontmatter anyway
+            continue
+        else:
+            paths.append(parts[1] if len(parts) > 1 else parts[0])
+    return paths
 
 
 def commit_message(root: Path, rev: str) -> str:
