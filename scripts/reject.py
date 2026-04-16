@@ -58,7 +58,20 @@ def default_branch(root: Path) -> str:
     raise RuntimeError("no master or main branch found in vault")
 
 
-def append_change_log(root: Path, pr_id: str, reason: str) -> None:
+def branch_title(root: Path, branch: str, base: str) -> str:
+    """Try to get the PR branch title for the log entry."""
+    try:
+        out = git(root, "rev-list", "--reverse", f"{base}..{branch}").strip()
+        shas = [s for s in out.splitlines() if s]
+        if shas:
+            msg = git(root, "log", "-1", "--format=%s", shas[0]).strip()
+            return msg
+    except RuntimeError:
+        pass
+    return branch
+
+
+def append_change_log(root: Path, pr_id: str, branch: str, base: str, reason: str) -> None:
     log_dir = root / CHANGE_LOG_DIR
     log_dir.mkdir(parents=True, exist_ok=True)
     now = dt.datetime.now().replace(microsecond=0)
@@ -67,11 +80,16 @@ def append_change_log(root: Path, pr_id: str, reason: str) -> None:
     header = ""
     if not log_file.exists():
         header = f"---\nkind: derived\n---\n\n# Change Log · {month}\n\n"
-    line = f'- {now.isoformat()} rejected pr/{pr_id} — "{reason}"\n'
+    title = branch_title(root, branch, base)
+    parts = [
+        f"- {now.isoformat()} rejected pr/{pr_id} — {title}",
+        f'  原因: "{reason}"',
+    ]
+    entry = "\n".join(parts) + "\n"
     with log_file.open("a", encoding="utf-8") as f:
         if header:
             f.write(header)
-        f.write(line)
+        f.write(entry)
 
 
 def update_inbox(root: Path, pr_id: str, branch: str, reason: str) -> Path | None:
@@ -144,9 +162,9 @@ def main() -> int:
     print(f"  reason: {args.reason}")
 
     try:
+        append_change_log(root, pr_id, branch, base, args.reason)
         git(root, "branch", "-D", branch)
         print(f"  deleted branch")
-        append_change_log(root, pr_id, args.reason)
         inbox_file = update_inbox(root, pr_id, branch, args.reason)
         if inbox_file:
             print(f"  marked inbox {inbox_file.name} rejected")
