@@ -2,7 +2,7 @@
 """
 reject.py - reject a PR branch.
 
-Deletes the pr/* branch, appends a rejection line to the change log, and marks
+Deletes the pr/* branch, prepends a rejection line to the change log, and marks
 the corresponding inbox TODO as rejected.
 
 Usage:
@@ -71,25 +71,31 @@ def branch_title(root: Path, branch: str, base: str) -> str:
     return branch
 
 
-def append_change_log(root: Path, pr_id: str, branch: str, base: str, reason: str) -> None:
+def prepend_change_log(root: Path, pr_id: str, branch: str, base: str, reason: str) -> None:
+    """Write a concise rejection entry at the TOP of the monthly log."""
     log_dir = root / CHANGE_LOG_DIR
     log_dir.mkdir(parents=True, exist_ok=True)
     now = dt.datetime.now().replace(microsecond=0)
     month = now.strftime("%Y-%m")
     log_file = log_dir / f"{month}.md"
-    header = ""
-    if not log_file.exists():
-        header = f"---\nkind: derived\n---\n\n# Change Log · {month}\n\n"
+    file_header = f"---\nkind: derived\n---\n\n# Change Log · {month}\n\n"
+
     title = branch_title(root, branch, base)
-    parts = [
-        f"- {now.isoformat()} rejected pr/{pr_id} — {title}",
-        f'  原因: "{reason}"',
-    ]
-    entry = "\n".join(parts) + "\n"
-    with log_file.open("a", encoding="utf-8") as f:
-        if header:
-            f.write(header)
-        f.write(entry)
+    line = f"- {now.strftime('%m-%d %H:%M')} rejected pr/{pr_id} — {title}，原因: {reason}"
+
+    existing_entries = ""
+    if log_file.exists():
+        text = log_file.read_text(encoding="utf-8")
+        lines = text.splitlines()
+        for i, l in enumerate(lines):
+            if l.startswith("- "):
+                existing_entries = "\n".join(lines[i:])
+                break
+
+    parts = [file_header.rstrip(), line]
+    if existing_entries:
+        parts.append(existing_entries)
+    log_file.write_text("\n".join(parts) + "\n", encoding="utf-8")
 
 
 def update_inbox(root: Path, pr_id: str, branch: str, reason: str) -> Path | None:
@@ -162,7 +168,7 @@ def main() -> int:
     print(f"  reason: {args.reason}")
 
     try:
-        append_change_log(root, pr_id, branch, base, args.reason)
+        prepend_change_log(root, pr_id, branch, base, args.reason)
         git(root, "branch", "-D", branch)
         print(f"  deleted branch")
         inbox_file = update_inbox(root, pr_id, branch, args.reason)

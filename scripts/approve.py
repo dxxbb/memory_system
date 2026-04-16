@@ -11,7 +11,7 @@ script does NOT run rebuild. It only:
   3. read the original PR commit message (first commit on the branch)
   4. squash-merge into main with an Approved-by: trailer
   5. delete the branch
-  6. append a line to system/change-log/<YYYY-MM>.md
+  6. prepend a line to system/change-log/<YYYY-MM>.md
   7. mark the corresponding inbox TODO as done (if present)
 
 Usage:
@@ -159,86 +159,36 @@ def extract_trailer(body: str, key: str) -> str:
     return ""
 
 
-def extract_section(body: str, key: str) -> str:
-    """Extract a 'How:' or 'Why:' section from commit body (until next section or trailer)."""
-    lines = body.splitlines()
-    capturing = False
-    result = []
-    for line in lines:
-        if line.startswith(f"{key}:"):
-            capturing = True
-            rest = line[len(key) + 1:].strip()
-            if rest:
-                result.append(rest)
-            continue
-        if capturing:
-            # Stop at next section header or trailer
-            if re.match(r"^[A-Z][a-z_-]+:", line) and not line.startswith("- "):
-                break
-            result.append(line)
-    return "\n".join(result).strip()
-
-
-def diff_name_status(root: Path, merged_sha: str) -> list[str]:
-    """Return compact file change list from the squash commit."""
-    out = git(root, "diff-tree", "--no-commit-id", "-r", "--name-status", merged_sha)
-    result = []
-    for line in out.strip().splitlines():
-        if not line:
-            continue
-        parts = line.split("\t")
-        status = parts[0]
-        path = parts[-1]
-        prefix = {"A": "+", "M": "~", "D": "-"}.get(status, "?")
-        result.append(f"{prefix}{path}")
-    return result
-
-
-def append_change_log(
+def prepend_change_log(
     root: Path, pr_id: str, title: str, body: str, merged_sha: str
 ) -> None:
+    """Write a concise, human-readable entry at the TOP of the monthly log."""
     log_dir = root / CHANGE_LOG_DIR
     log_dir.mkdir(parents=True, exist_ok=True)
     now = dt.datetime.now().replace(microsecond=0)
     month = now.strftime("%Y-%m")
     log_file = log_dir / f"{month}.md"
-    header = ""
-    if not log_file.exists():
-        header = f"---\nkind: derived\n---\n\n# Change Log · {month}\n\n"
+    file_header = f"---\nkind: derived\n---\n\n# Change Log · {month}\n\n"
 
-    # Build rich entry
-    parts = [f"- {now.isoformat()} approved pr/{pr_id} {merged_sha[:7]} — {title}"]
+    # One-line entry: date + action + pr + sha + title
+    line = f"- {now.strftime('%m-%d %H:%M')} approved pr/{pr_id} ({merged_sha[:7]}) — {title}"
 
-    trigger = extract_trailer(body, "Trigger")
-    category = extract_trailer(body, "Category")
-    if trigger or category:
-        meta = []
-        if category:
-            meta.append(f"category={category}")
-        if trigger:
-            meta.append(f"trigger={trigger}")
-        parts.append(f"  {', '.join(meta)}")
+    # Read existing content (skip frontmatter + heading)
+    existing_entries = ""
+    if log_file.exists():
+        text = log_file.read_text(encoding="utf-8")
+        # Find the first entry line (starts with "- ")
+        lines = text.splitlines()
+        for i, l in enumerate(lines):
+            if l.startswith("- "):
+                existing_entries = "\n".join(lines[i:])
+                break
 
-    files = diff_name_status(root, merged_sha)
-    if files:
-        parts.append(f"  改动: {', '.join(files)}")
-
-    why = extract_section(body, "Why")
-    if why:
-        # Take first line only for brevity
-        parts.append(f"  原因: {why.splitlines()[0]}")
-
-    how = extract_section(body, "How")
-    if how:
-        # Compact: join bullet lines
-        how_lines = [l.strip().lstrip("- ") for l in how.splitlines() if l.strip()]
-        parts.append(f"  摘要: {'; '.join(how_lines)}")
-
-    entry = "\n".join(parts) + "\n"
-    with log_file.open("a", encoding="utf-8") as f:
-        if header:
-            f.write(header)
-        f.write(entry)
+    # Write: header + new entry on top + old entries
+    parts = [file_header.rstrip(), line]
+    if existing_entries:
+        parts.append(existing_entries)
+    log_file.write_text("\n".join(parts) + "\n", encoding="utf-8")
 
 
 def update_inbox(root: Path, pr_id: str, branch: str) -> Path | None:
@@ -319,7 +269,7 @@ def main() -> int:
         print(f"  merged as {merged_sha[:7]}")
         delete_branch(root, branch)
         print(f"  deleted branch {branch}")
-        append_change_log(root, pr_id, title, body, merged_sha)
+        prepend_change_log(root, pr_id, title, body, merged_sha)
         inbox_file = update_inbox(root, pr_id, branch)
         if inbox_file:
             print(f"  marked inbox {inbox_file.name} done")
