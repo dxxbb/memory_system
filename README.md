@@ -19,13 +19,8 @@
 
 ### 当前主方案
 
-- [onepage.md](docs/onepage.md) — **一页读懂整个项目**（推荐入口，可直接搬进 personal_OS vault）
-- [personal-os-design.md](docs/architecture/personal-os-design.md) — 整体运转机制（最详细）
-- [mvp-week1.md](docs/implementation/mvp-week1.md) — Week 1 交付物和验收闭环
-
-### 仍活跃的设计
-
-- [platform-landing-review.md](docs/architecture/platform-landing-review.md) — 各 AI 平台的 landing 能力对比
+- [docs/design.md](docs/design.md) — **唯一设计文档**（整体运转机制 + MVP Week 1 落地 + Obsidian 前端约定）
+- onepage — 见 vault `workspace/project/forge/onepage.md`（权威版本，不在本仓库）
 
 ### 研究资料
 
@@ -36,24 +31,21 @@
 - [karpathy-thread-reactions.md](docs/research/karpathy-thread-reactions.md)
 - [personal-ai-os-practitioners.md](docs/research/personal-ai-os-practitioners.md)
 
-### 实施文档
-
-- [roadmap.md](docs/implementation/roadmap.md)
-- [obsidian-kb-sop.md](docs/implementation/obsidian-kb-sop.md)
+> 研究资料后续将整体迁往 vault 的 `knowledge base/`（待另一 PR 执行）。
 
 ### 归档（被取代但保留作历史参考）
 
-- [docs/architecture/_archive/](docs/architecture/_archive/) — 旧架构设计（reference-architecture, solution-design v1/v2, reframed-architecture, x-thread-ingest）
-- [_archive/](\_archive/) — 旧代码原型（JSON memory engine, tests, data, pyproject.toml, fetch_x_thread.py）
+- [docs/architecture/_archive/](docs/architecture/_archive/) — 旧架构与实施文档（personal-os-design, mvp-week1, platform-landing-review, roadmap, obsidian-kb-sop, reference-architecture, solution-design v1/v2, reframed-architecture, x-thread-ingest）
+- [_archive/](_archive/) — 旧代码原型（JSON memory engine, tests, data, pyproject.toml, fetch_x_thread.py）
 - [examples/_archive/](examples/_archive/) — 旧示例（phase1-kb-first）
 
 ## 仓库结构
 
 ```text
 docs/
-  research/           调研文档（6 篇）
-  architecture/       架构设计（当前主方案 + 平台 review）
-  implementation/     落地路线（MVP + roadmap + SOP）
+  design.md           单一设计文档（当前主方案）
+  research/           调研文档（6 篇，待迁往 vault knowledge base/）
+  architecture/_archive/   历史设计与实施文档归档
 scripts/              工具脚本（站点生成；MVP 脚本待写）
 site/                 可视化方案页
 _archive/             归档的旧代码原型

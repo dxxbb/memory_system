@@ -1,6 +1,6 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code when working with code in this repository.
+This file provides guidance to Codex when working with code in this repository.
 
 ## Project Overview
 
@@ -12,7 +12,7 @@ This is a **Personal OS** research and implementation project. The current archi
 
 ## Current Focus
 
-MVP Week 1: build the end-to-end pipeline from conversation → inbox → PR → approve → rebuild → new CLAUDE.md view.
+MVP Week 1: build the end-to-end pipeline from conversation → inbox → PR → approve → rebuild → new AGENTS.md view.
 
 The vault (OS data) lives in a **separate git repo**. This repo contains design docs, scripts, and tooling.
 
@@ -31,7 +31,7 @@ python3 -m http.server 8126 --bind 127.0.0.1 -d site
 ## Architecture
 
 **Agent-first model:**
-- Agent (Claude Code) is the primary orchestrator, monitoring the OS daily
+- Agent (Codex) is the primary orchestrator, monitoring the OS daily
 - Scripts (`watch.py`, `deps.py`, `approve.py`) are deterministic tools called by the agent or human
 - Agent reads `system/operating-rule/global.md + events/<type>.md` as processing guidelines
 
