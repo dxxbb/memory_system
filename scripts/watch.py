@@ -64,10 +64,16 @@ def classify(path: str) -> str:
         return "cc_memory"
     if path.startswith("assist/memory collection/history/"):
         return "conversation"
+    if path.startswith("assist/learn and improve/skill/"):
+        return "skill_change"
+    if path.startswith("assist/learn and improve/preference/"):
+        return "preference_change"
     if path.startswith("user/daily memo/"):
         return "daily_memo"
     if path.startswith("user/"):
         return "identity_change"
+    if path.startswith("workspace/white board/"):
+        return "whiteboard"
     if path.startswith("workspace/project/"):
         return "project_update"
     if path.startswith("workspace/topic/"):
