@@ -61,7 +61,7 @@ GitHub Pages: <https://dxxbb.github.io/forge/>
 
 ## MVP 最小闭环
 
-1. 一段真实对话 → 手工保存 transcript 到 `conversation memory/YYYY-MM-DD/`，git commit
+1. 一段真实对话 → 手工保存 transcript 到 `assist/memory collection/history/YYYY-MM-DD/`，git commit
 2. 对 Claude Code 说 "monitor OS" → Agent 运行 `watch.py` → inbox 产一条 TODO
 3. Agent 读 guideline → 评估对话 → 产一个 PR branch 改 `assist/sp/master.md`
 4. 人 `git diff main...pr/0001` review → `python3 scripts/approve.py pr/0001`

@@ -3,7 +3,12 @@
 import_cc_memory.py - import Claude Code auto-memory files into the vault.
 
 Scans ~/.claude/projects/<slug>/memory/*.md and copies each to
-<vault>/conversation memory/claude code memory/<slug>/<file>.md.
+<vault>/assist/memory collection/agents memory/<slug>/<file>.md.
+
+Note: historical per-project content has been consolidated into a single
+`agents memory/memory of claude.md` (see vault commit 9468c63). New imports
+continue to write per-project subdirs alongside the merged file; the script
+itself does not yet consolidate. Future redesign may merge per import.
 
 CC memory files are already-distilled user signals (preferences, project
 context) written eagerly by Claude Code. This importer just copies them
@@ -25,7 +30,7 @@ import os
 import sys
 from pathlib import Path
 
-CC_SUBDIR = "conversation memory/claude code memory"
+CC_SUBDIR = "assist/memory collection/agents memory"
 
 
 def vault_root(arg: str | None) -> Path:

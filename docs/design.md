@@ -159,7 +159,7 @@ watcher 每次把无 frontmatter 的文件视为 source 时，要在 log 里记 
 
 这些目录是"人还没消化过的原材料"或"系统自己的工作队列"，agent 可以直接写文件并 commit 到 main：
 
-- `conversation memory/` —— 对话原始回流
+- `assist/memory collection/` —— 对话原始回流
 - `knowledge base/src/` —— 外部原材料捕获(clipper、book 摘录等)
 - `assist/preference/improve/learning inbox/` —— 待审的偏好观察
 
@@ -221,7 +221,7 @@ agent 默认走"直接回答"分支。
 
 How: 在 sp/master.md 的"工作方式"章节新增一条规则。
 
-Trigger: conversation memory/2026-04-13/claude-code.md@a1b2c3d
+Trigger: assist/memory collection/2026-04-13/claude-code.md@a1b2c3d
 Category: preference
 Affects-downstream: yes
 ```
@@ -315,7 +315,7 @@ watcher 对不跳过的 commit，遍历 diff 里涉及的每个文件：
 
    | 路径前缀 | event_type |
    |---|---|
-   | `conversation memory/**` | `conversation` |
+   | `assist/memory collection/**` | `conversation` |
    | `user/daily memo/**` | `daily_memo` |
    | `user/**` (其他) | `identity_change` |
    | `workspace/project/**` | `project_update` |
@@ -501,7 +501,7 @@ vault（`dxy_OS/`）是一个独立 git repo，日常由 **Obsidian 作为人机
 
 换言之，Obsidian 是一个**纯展示 + 纯编辑**的 shell。vault 不使用 Obsidian-specific 的 Bases、Dataview 或 Templater 功能来承担系统职责；这些功能即使启用，也只能作为辅助浏览手段，不能进入 `kind: source / derived / system` 的真相链。
 
-**目录可见性**：vault 顶层目录对 Obsidian 都是可见的（`user/`、`knowledge base/`、`workspace/`、`assist/`、`system/`、`conversation memory/`、`knowledge base/src/`、`config store/` 等）。系统产物目录（`system/**`、`.watcher-state`）通过 Obsidian 的排除设置可以从侧栏隐藏，但仍在 git 管辖内。
+**目录可见性**：vault 顶层目录对 Obsidian 都是可见的（`user/`、`knowledge base/`、`workspace/`、`assist/`、`system/`、`assist/memory collection/`、`knowledge base/src/`、`config store/` 等）。系统产物目录（`system/**`、`.watcher-state`）通过 Obsidian 的排除设置可以从侧栏隐藏，但仍在 git 管辖内。
 
 **frontmatter 约定**：vault 内所有受管文件的 frontmatter 只依赖三个顶层字段：`kind: source | derived | system`，以及 derived 文件的 `upstream:` 列表。**不使用**过去某个早期方案里讨论过的 `id / family / status / cleanliness / persistence / grounding / project_refs / view_refs / origin_author_*` 等复杂字段——那套设计属于 04-13 之前的 KB-first 阶段，已被 build-system 模型取代。
 
@@ -523,7 +523,7 @@ vault（`dxy_OS/`）是一个独立 git repo，日常由 **Obsidian 作为人机
 - 1 个 view：`assist/view/claude-code/CLAUDE.md`
 - 1 份 SP：`assist/sp/master.md`
 - 1 份 section detail：`assist/section detail/me.md`
-- 6 个顶层目录：`user/`、`conversation memory/`、`assist/{section detail, sp, view}/`、`system/{monitor inbox, change log, operating rule, PR review}/`
+- 6 个顶层目录：`user/`、`assist/memory collection/`、`assist/{section detail, sp, view}/`、`system/{monitor inbox, change log, operating rule, PR review}/`
 
 **MVP 显式不做**：
 
@@ -544,7 +544,7 @@ vault/
 ├── user/
 │   └── about me/
 │       └── me.md                         # kind: source, 极简身份三五段
-├── conversation memory/
+├── assist/memory collection/
 │   └── 2026-04-13/
 │       └── .gitkeep                      # 空目录占位
 ├── assist/
@@ -614,7 +614,7 @@ kind: system
 id: 0001
 status: todo
 event_type: conversation
-source_path: conversation memory/2026-04-13/claude-code.md
+source_path: assist/memory collection/2026-04-13/claude-code.md
 source_commit: a1b2c3d
 created_at: 2026-04-13T14:20:00
 ---
@@ -670,9 +670,9 @@ Agent（Claude Code）是 OS 的主调度者，不是被脚本启动的。默认
 
 内容大纲：
 
-- 触发条件：`conversation memory/**` 下有新 commit
+- 触发条件：`assist/memory collection/**` 下有新 commit
 - 处理流程：
-  1. 读 `source_path` 指向的 conversation memory 文件(整份对话 transcript)
+  1. 读 `source_path` 指向的 memory collection 文件(整份对话 transcript)
   2. 评估这次对话：
      - 用户的目的是什么？达成了吗？
      - 有没有明显不符合预期的回答？
@@ -817,7 +817,7 @@ last_rebuild_at: 2026-04-13T00:00:00
 #### 步骤
 
 1. **(人工)** 和 Claude Code 做一段真实对话，对话里故意让 agent 犯一个小错(比如不先确认假设就直接回答)
-2. **(人工)** 把 transcript 保存成 `conversation memory/2026-04-13/claude-code.md`，`git add && git commit -m "Save conversation 2026-04-13"`
+2. **(人工)** 把 transcript 保存成 `assist/memory collection/2026-04-13/claude-code.md`，`git add && git commit -m "Save conversation 2026-04-13"`
 3. **(人工)** 运行 `python3 scripts/watch.py`
    - 预期：`system/monitor inbox/0001-conversation.md` 出现，`event_type: conversation`，指向刚才的 transcript 文件
 4. **(人工)** 对 Claude Code 说 "monitor OS"（或等价指令）

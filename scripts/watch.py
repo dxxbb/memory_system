@@ -60,9 +60,9 @@ def git(root: Path, *args: str) -> str:
 
 
 def classify(path: str) -> str:
-    if path.startswith("conversation memory/claude code memory/"):
+    if path.startswith("assist/memory collection/agents memory/"):
         return "cc_memory"
-    if path.startswith("conversation memory/"):
+    if path.startswith("assist/memory collection/history/"):
         return "conversation"
     if path.startswith("user/daily memo/"):
         return "daily_memo"
