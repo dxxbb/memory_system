@@ -13,7 +13,7 @@ itself does not yet consolidate. Future redesign may merge per import.
 CC memory files are already-distilled user signals (preferences, project
 context) written eagerly by Claude Code. This importer just copies them
 verbatim; the forge triage pipeline will later compare them against
-section detail/ and decide what to sediment.
+sp/section/ and decide what to sediment.
 
 Idempotent: files with identical content are skipped; differing files are
 overwritten (CC rewrites memories in place, so this mirrors that).

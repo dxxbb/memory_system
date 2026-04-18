@@ -37,7 +37,7 @@
 原因：
 
 1. 个人 OS 的价值不在"沉淀了多少东西"，而在"每一条沉淀物都能被准确送到 AI 端被用起来"。后者是一条**传播链**，不是一个**仓库**。
-2. 传播链上的每一步(identity → section detail → SP → view)都是**上游变化时下游必须跟着变**的关系，这正好是 build system 的语义。
+2. 传播链上的每一步(identity → sp/section → SP → view)都是**上游变化时下游必须跟着变**的关系，这正好是 build system 的语义。
 3. 个人 OS 的事件空间是无限的(新对话、新 memo、新 clipping、新 PR 评论……)，事件驱动的 build system 比周期性全量扫描的 storage system 更能处理这种高频 + 不均匀的事件流。
 
 **类比**：这个系统和 Make/Bazel 的关系，等于 Karpathy wiki 和他那份 `CLAUDE.md` 的关系 —— 前者是形式，后者是灵魂。我们只是把形式从"wiki 编译器"扩展到"整个个人 OS 编译器"。
@@ -68,7 +68,7 @@
                                                    │squash→main│
                                                    └──────────┘
 
-注：rebuild downstream（section detail → sp → view）已在 PR branch 上
+注：rebuild downstream（sp/section → sp → view）已在 PR branch 上
     由 agent 完成，PR diff 已包含完整下游改动。approve.py 只做 squash merge。
 ```
 
@@ -174,7 +174,7 @@ watcher 每次把无 frontmatter 的文件视为 source 时，要在 log 里记 
 
 - `user/` —— 身份真相源，agent 不能改
 - `knowledge base/` —— 长期知识
-- `assist/section detail/`、`assist/sp/`、`assist/view/` —— 依赖传播链的中转和终点
+- `assist/sp/section/`、`assist/sp/`、`assist/view/` —— 依赖传播链的中转和终点
 - `assist/preference/current/` —— 生效中的偏好(`learning inbox` 是 agent 可写的，`current` 不可)
 - `workspace/` —— 灰色地带但取严格态度：**workspace 也要 review**
 - `system/operating rule/` —— agent 不能自己改游戏规则
@@ -230,7 +230,7 @@ Trailers 的约定：
 
 - `Trigger: <path>@<commit>` —— 触发这条 PR 的 source event
 - `Category: <event_type>` —— 用于 `git branch --list pr/*` 等 one-liner 对 PR 分组统计
-- `Affects-downstream: yes|no` —— 是否影响下游（section detail / sp / view）；为 yes 时 PR 必须在 branch 上已经包含完整下游 rebuild
+- `Affects-downstream: yes|no` —— 是否影响下游（sp/section / sp / view）；为 yes 时 PR 必须在 branch 上已经包含完整下游 rebuild
 
 ### 5.4 MVP 约束：一个 PR 只改一个 source 文件
 
@@ -395,7 +395,7 @@ agent 可能偶尔越界，这是成本。修复方法是改 guideline 或在 Cl
 |---|---|
 | watcher 扫 git diff | 评估对话是否达成目的 |
 | 路由 inbox 分类 | 决定是否需要改 SP |
-| 读/写 frontmatter | 决定改 section detail / sp / view 的哪里、怎么改 |
+| 读/写 frontmatter | 决定改 sp/section / sp / view 的哪里、怎么改 |
 | `deps.py` 算依赖图 | 执行跨层 rebuild（section → sp → view）并 commit 到 PR branch |
 | `approve.py` squash merge | 写 PR 的 commit message |
 | 写 change log | 读 comment、决定怎么回应 |
@@ -494,7 +494,7 @@ vault（`dxy_OS/`）是一个独立 git repo，日常由 **Obsidian 作为人机
 
 **Obsidian 不负责**：
 
-- 生成 projection（即 `section detail → sp → view` 的 rebuild 链路）—— 由 agent + scripts 做
+- 生成 projection（即 `sp/section → sp → view` 的 rebuild 链路）—— 由 agent + scripts 做
 - 派生索引 —— 由 `scripts/deps.py` 做
 - 平台同步 —— 由 agent 写 `view/` 完成
 - 任何自动化判断
@@ -522,8 +522,8 @@ vault（`dxy_OS/`）是一个独立 git repo，日常由 **Obsidian 作为人机
 - 1 个事件类型：`conversation`
 - 1 个 view：`assist/view/claude-code/CLAUDE.md`
 - 1 份 SP：`assist/sp/master.md`
-- 1 份 section detail：`assist/section detail/me.md`
-- 6 个顶层目录：`user/`、`assist/memory collection/`、`assist/{section detail, sp, view}/`、`system/{monitor inbox, change log, operating rule, PR review}/`
+- 1 份 sp/section：`assist/sp/section/me.md`
+- 6 个顶层目录：`user/`、`assist/memory collection/`、`assist/{sp/section, sp, view}/`、`system/{monitor inbox, change log, operating rule, PR review}/`
 
 **MVP 显式不做**：
 
@@ -548,10 +548,10 @@ vault/
 │   └── 2026-04-13/
 │       └── .gitkeep                      # 空目录占位
 ├── assist/
-│   ├── section detail/
+│   ├── sp/section/
 │   │   └── me.md                         # kind: derived, upstream: user/about me/me.md
 │   ├── sp/
-│   │   └── master.md                     # kind: derived, upstream: section detail/me.md
+│   │   └── master.md                     # kind: derived, upstream: sp/section/about user/identity.md
 │   └── view/
 │       └── claude-code/
 │           └── CLAUDE.md                 # kind: derived, upstream: sp/master.md
@@ -746,7 +746,7 @@ frontmatter：
 ---
 kind: derived
 upstream:
-  - assist/section detail/me.md
+  - assist/sp/section/me.md
 generated_by: manual-init
 last_rebuild_at: 2026-04-13T00:00:00
 ---
@@ -758,7 +758,7 @@ last_rebuild_at: 2026-04-13T00:00:00
 # Master System Prompt
 
 ## 身份
-(从 section detail/me.md 投影的身份段落)
+(从 sp/section/about user/identity.md 投影的身份段落)
 
 ## 工作方式
 (空，等第一条 PR 来填)
@@ -768,11 +768,11 @@ last_rebuild_at: 2026-04-13T00:00:00
 - 不确定的事先说不确定
 ```
 
-说明：MVP 第一次闭环之前，这份文件和 `section detail/` 的各 fragment 手工初始化为空占位即可。第一次真正的 conversation PR 由 agent 在 branch 上填充实际内容。
+说明：MVP 第一次闭环之前，这份文件和 `sp/section/` 的各 fragment 手工初始化为空占位即可。第一次真正的 conversation PR 由 agent 在 branch 上填充实际内容。
 
 #### 14.3.9 `scripts/approve.py`
 
-**重要**：approve.py 是**纯 squash merge 工具**，不跑 rebuild。Rebuild 由 agent 在 PR branch 上按 `section-rebuild.md` / `sp-rebuild.md` / `view-rebuild.md` 的步骤完成，PR diff 已经包含从 section detail 到 view 的完整改动。
+**重要**：approve.py 是**纯 squash merge 工具**，不跑 rebuild。Rebuild 由 agent 在 PR branch 上按 `section-rebuild.md` / `sp-rebuild.md` / `view-rebuild.md` 的步骤完成，PR diff 已经包含从 sp/section 到 view 的完整改动。
 
 **输入**：`pr/<branch-name>`
 **行为**：
@@ -828,7 +828,7 @@ last_rebuild_at: 2026-04-13T00:00:00
    - 预期：Agent 回到 main，更新 inbox 项为 done，在正文注明 `pr/0001-add-assumption-check`
 5. **(人工)** `git diff main...pr/0001-add-assumption-check` 查看改动
 6. **(人工)** 运行 `python3 scripts/approve.py pr/0001-add-assumption-check`
-   - 预期：PR 已包含 section detail / sp / view 跨层改动（agent 在 step 4 完成）
+   - 预期：PR 已包含 sp/section / sp / view 跨层改动（agent 在 step 4 完成）
    - 预期：`approve.py` 做纯 squash merge，commit message 带 `Approved-by:`
    - 预期：branch 被删
    - 预期：change log 追加一行
