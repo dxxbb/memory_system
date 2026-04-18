@@ -63,7 +63,7 @@ GitHub Pages: <https://dxxbb.github.io/forge/>
 
 1. 一段真实对话 → 手工保存 transcript 到 `assist/memory collection/history/YYYY-MM-DD/`，git commit
 2. 对 Claude Code 说 "monitor OS" → Agent 运行 `watch.py` → inbox 产一条 TODO
-3. Agent 读 guideline → 评估对话 → 产一个 PR branch 改 `assist/sp/master.md`
+3. Agent 读 guideline → 评估对话 → 产一个 PR branch 改 `assist/SP/config/master.md`
 4. 人 `git diff main...pr/0001` review → `python3 scripts/approve.py pr/0001`
 5. `approve.py` 跑 `deps.py` → rebuild `assist/view/claude-code/CLAUDE.md` → squash merge 进 main
 6. 新 Claude Code session 读到新版 `CLAUDE.md`

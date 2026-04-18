@@ -10,7 +10,7 @@
 
 原始文档已归档至 `docs/architecture/_archive/`。元原则（可解释性）见 `dxy_OS` vault 的 `workspace/project/forge/onepage.md`。
 
-> **说明**：§14 (MVP Week 1 落地) 保留了 `2026-04-13` 当时的交付清单原文，其中 §14.3.8 的 `assist/sp/master.md` 结构示例是旧版（三段中文骨架），当前实际结构已切换为四段英文骨架——三段 vs 四段的设计本身尚在讨论中，故此节不改，留待后续 PR 单独讨论。
+> **说明**：§14 (MVP Week 1 落地) 保留了 `2026-04-13` 当时的交付清单原文，其中 §14.3.8 的 `assist/SP/config/master.md` 结构示例是旧版（三段中文骨架），当前实际结构已切换为四段英文骨架——三段 vs 四段的设计本身尚在讨论中，故此节不改，留待后续 PR 单独讨论。
 
 ---
 
@@ -174,7 +174,7 @@ watcher 每次把无 frontmatter 的文件视为 source 时，要在 log 里记 
 
 - `user/` —— 身份真相源，agent 不能改
 - `knowledge base/` —— 长期知识
-- `assist/sp/section/`、`assist/sp/`、`assist/view/` —— 依赖传播链的中转和终点
+- `assist/SP/section/`、`assist/SP/`、`assist/view/` —— 依赖传播链的中转和终点
 - `assist/preference/current/` —— 生效中的偏好(`learning inbox` 是 agent 可写的，`current` 不可)
 - `workspace/` —— 灰色地带但取严格态度：**workspace 也要 review**
 - `system/operating rule/` —— agent 不能自己改游戏规则
@@ -521,8 +521,8 @@ vault（`dxy_OS/`）是一个独立 git repo，日常由 **Obsidian 作为人机
 
 - 1 个事件类型：`conversation`
 - 1 个 view：`assist/view/claude-code/CLAUDE.md`
-- 1 份 SP：`assist/sp/master.md`
-- 1 份 sp/section：`assist/sp/section/me.md`
+- 1 份 SP：`assist/SP/config/master.md`
+- 1 份 sp/section：`assist/SP/section/me.md`
 - 6 个顶层目录：`user/`、`assist/memory collection/`、`assist/{sp/section, sp, view}/`、`system/{monitor inbox, change log, operating rule, PR review}/`
 
 **MVP 显式不做**：
@@ -684,7 +684,7 @@ Agent（Claude Code）是 OS 的主调度者，不是被脚本启动的。默认
      - 如果对话完全符合预期 → skip，change log 记一行 "nothing to improve"
   4. 创建 PR(如果需要)：
      - `git checkout -b pr/<自增id>-<短描述>`
-     - 编辑 `assist/sp/master.md`
+     - 编辑 `assist/SP/config/master.md`
      - `git commit` 用下面的 template
      - 回到 main 后，由系统脚本更新 inbox 状态为 `done`，并记录 PR branch
 - Commit message template：
@@ -702,7 +702,7 @@ Agent（Claude Code）是 OS 的主调度者，不是被脚本启动的。默认
   ```
 
 - 允许改的文件：
-  - `assist/sp/master.md`(唯一)
+  - `assist/SP/config/master.md`(唯一)
 - 禁止改的文件：
   - 所有其他文件
 - 评估的 anti-pattern(避免)：
@@ -736,7 +736,7 @@ Agent（Claude Code）是 OS 的主调度者，不是被脚本启动的。默认
 
 预计行数：**60 行**以内。
 
-#### 14.3.8 `assist/sp/master.md` 初版
+#### 14.3.8 `assist/SP/config/master.md` 初版
 
 > **说明**：此处示例的三段中文骨架（身份 / 工作方式 / 边界）是 `2026-04-13` 当时的设计；后续 PR 中已改为四段英文骨架（Identity / Context / Working Style / Boundaries）。三段 vs 四段的取舍本身尚在讨论中，本节保持原文以忠实记录启动时的决策。
 
@@ -746,7 +746,7 @@ frontmatter：
 ---
 kind: derived
 upstream:
-  - assist/sp/section/me.md
+  - assist/SP/section/me.md
 generated_by: manual-init
 last_rebuild_at: 2026-04-13T00:00:00
 ---
