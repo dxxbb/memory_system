@@ -26,11 +26,11 @@
 
 研究资料已整体迁至 vault `knowledge base/`（PR 0005，2026-04-17），当前分布：
 
-- `knowledge base/tech/ai/personal-os/karpathy-wiki.md` — Karpathy LLM Wiki 方案 + X thread 社区反应
-- `knowledge base/tech/ai/personal-os/practitioners.md` — 非 Karpathy 实践者（Nick Milo / Eugene / Cole / Huy / Sean / Akshay）+ Nous Hermes agent
-- `knowledge base/tech/ai/memory/memory-patterns.md` — long memory 学术模型 + 社区操作模式 + 2026 产品进展
-- `knowledge base/tech/ai/claude-code/claude-code.md` — Claude Code 能力边界、prompt 最佳实践
-- `knowledge base/tech/ai/policy/ai-policy.md` — AI 产业地缘政治与监管
+- `knowledge base/wiki/topic/tech/ai/personal-os/karpathy-wiki.md` — Karpathy LLM Wiki 方案 + X thread 社区反应
+- `knowledge base/wiki/topic/tech/ai/personal-os/practitioners.md` — 非 Karpathy 实践者（Nick Milo / Eugene / Cole / Huy / Sean / Akshay）+ Nous Hermes agent
+- `knowledge base/wiki/topic/tech/ai/memory/memory-patterns.md` — long memory 学术模型 + 社区操作模式 + 2026 产品进展
+- `knowledge base/wiki/topic/tech/ai/claude-code/claude-code.md` — Claude Code 能力边界、prompt 最佳实践
+- `knowledge base/wiki/topic/tech/ai/policy/ai-policy.md` — AI 产业地缘政治与监管
 
 ### 归档（被取代但保留作历史参考）
 
