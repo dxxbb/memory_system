@@ -160,7 +160,7 @@ watcher 每次把无 frontmatter 的文件视为 source 时，要在 log 里记 
 这些目录是"人还没消化过的原材料"或"系统自己的工作队列"，agent 可以直接写文件并 commit 到 main：
 
 - `conversation memory/` —— 对话原始回流
-- `ingest src/` —— 外部原材料捕获(clipper、book 摘录等)
+- `knowledge base/src/` —— 外部原材料捕获(clipper、book 摘录等)
 - `assist/preference/improve/learning inbox/` —— 待审的偏好观察
 
 这里要注意：
@@ -322,7 +322,7 @@ watcher 对不跳过的 commit，遍历 diff 里涉及的每个文件：
    | `workspace/topic/**` | `topic_update` |
    | `workspace/reading/**` | `reading_update` |
    | `workspace/writing/**` | `writing_update` |
-   | `ingest src/**` | `ingest` |
+   | `knowledge base/src/**` | `ingest` |
    | 其他 | `unclassified` |
 
 7. 在 `system/monitor inbox/` 写一个 TODO 文件
@@ -501,7 +501,7 @@ vault（`dxy_OS/`）是一个独立 git repo，日常由 **Obsidian 作为人机
 
 换言之，Obsidian 是一个**纯展示 + 纯编辑**的 shell。vault 不使用 Obsidian-specific 的 Bases、Dataview 或 Templater 功能来承担系统职责；这些功能即使启用，也只能作为辅助浏览手段，不能进入 `kind: source / derived / system` 的真相链。
 
-**目录可见性**：vault 顶层目录对 Obsidian 都是可见的（`user/`、`knowledge base/`、`workspace/`、`assist/`、`system/`、`conversation memory/`、`ingest src/`、`config store/` 等）。系统产物目录（`system/**`、`.watcher-state`）通过 Obsidian 的排除设置可以从侧栏隐藏，但仍在 git 管辖内。
+**目录可见性**：vault 顶层目录对 Obsidian 都是可见的（`user/`、`knowledge base/`、`workspace/`、`assist/`、`system/`、`conversation memory/`、`knowledge base/src/`、`config store/` 等）。系统产物目录（`system/**`、`.watcher-state`）通过 Obsidian 的排除设置可以从侧栏隐藏，但仍在 git 管辖内。
 
 **frontmatter 约定**：vault 内所有受管文件的 frontmatter 只依赖三个顶层字段：`kind: source | derived | system`，以及 derived 文件的 `upstream:` 列表。**不使用**过去某个早期方案里讨论过的 `id / family / status / cleanliness / persistence / grounding / project_refs / view_refs / origin_author_*` 等复杂字段——那套设计属于 04-13 之前的 KB-first 阶段，已被 build-system 模型取代。
 
@@ -527,7 +527,7 @@ vault（`dxy_OS/`）是一个独立 git repo，日常由 **Obsidian 作为人机
 
 **MVP 显式不做**：
 
-- `workspace/`、`knowledge base/`、`config store/`、`ingest src/`、`daily memo/`
+- `workspace/`、`knowledge base/`、`config store/`、`knowledge base/src/`、`daily memo/`
 - `assist/preference/`、`assist/tool/`
 - 组合式 SP(master + role overlay)
 - 除 `conversation` 之外的 event 类型

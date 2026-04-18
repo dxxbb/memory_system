@@ -45,7 +45,7 @@ def vault_root() -> Path:
 def git(root: Path, *args: str) -> str:
     # core.quotepath=false so non-ASCII filenames (CJK / emoji / …) are
     # returned verbatim instead of octal-escaped + double-quoted. Without this,
-    # `git show --name-status` emits e.g. `"ingest src/clipping/\345\276\256...md"`
+    # `git show --name-status` emits e.g. `"knowledge base/src/clipping/\345\276\256...md"`
     # which breaks downstream .endswith(".md") checks.
     result = subprocess.run(
         ["git", "-C", str(root), "-c", "core.quotepath=false", *args],
@@ -76,7 +76,7 @@ def classify(path: str) -> str:
         return "reading_update"
     if path.startswith("workspace/writing/"):
         return "writing_update"
-    if path.startswith("ingest src/"):
+    if path.startswith("knowledge base/src/"):
         return "ingest"
     return "unclassified"
 
