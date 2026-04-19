@@ -84,6 +84,8 @@ def classify(path: str) -> str:
         return "writing_update"
     if path.startswith("04 knowledge base/src/"):
         return "ingest"
+    if path.startswith("04 knowledge base/wiki/"):
+        return "knowledge_update"
     return "unclassified"
 
 
@@ -264,6 +266,9 @@ def main() -> int:
                 skipped_files += 1
                 continue
             if "/." in f:
+                skipped_files += 1
+                continue
+            if "/_archive/" in f:
                 skipped_files += 1
                 continue
             if not f.endswith(".md"):
