@@ -1,50 +1,34 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code when working with code in this repository.
+This file provides guidance to Claude Code when working in **this repository (forge)**.
 
-## Project Overview
+forge 的设计语言（build-system 隐喻、三角色分工、SP MVC 三层等）已在 vault 5 段 SP 里讲过，agent 通过 `~/.claude/CLAUDE.md` 读到，本文件不再复述。
 
-This is a **Personal OS** research and implementation project. The current architecture treats the personal OS as a **build system**: all changes are git diffs, all processing goes through PR review, all views are pre-compiled artifacts.
+## Repository facts
 
-**Key design docs:**
-- `docs/design.md` — single design document (运转机制 + MVP Week 1 落地 + Obsidian 前端)
-- onepage lives in the vault at `workspace/project/forge/onepage.md` (authoritative, not in this repo)
+- forge 是设计文档 + 脚本 + tooling 仓库；OS 数据本身在 vault（独立 git repo，本机 `~/dxy_OS/`）
+- 单一设计文档：`docs/design.md`（运转机制 + MVP Week 1 落地 + Obsidian 前端）
+- onepage 不在本仓库，在 vault `03 workspace/project/forge/onepage.md`（权威版本）
+- 调研材料在 vault `04 knowledge base/`（2026-04-17 PR 0005 迁出）
 
-## Current Focus
+## Current focus
 
-MVP Week 1: build the end-to-end pipeline from conversation → inbox → PR → approve → rebuild → new CLAUDE.md view.
-
-The vault (OS data) lives in a **separate git repo**. This repo contains design docs, scripts, and tooling.
+MVP Week 1 闭环已跑通（vault SP `Workspace` 段有详情）。下一步从 `events/` guideline 补全开始。
 
 ## Commands
 
-Rebuild the visualization site (`site/index.html`) from `site/content.md` and `site/diagrams/*.json`:
+Rebuild 可视化站点（`site/index.html`）：
 ```bash
 python3 scripts/build_site.py
 ```
 
-Preview the site locally:
+本地预览：
 ```bash
 python3 -m http.server 8126 --bind 127.0.0.1 -d site
 ```
 
-## Architecture
+## Archived
 
-**Agent-first model:**
-- Agent (Claude Code) is the primary orchestrator, monitoring the OS daily
-- Scripts (`watch.py`, `deps.py`, `approve.py`) are deterministic tools called by the agent or human
-- Agent reads `system/operating rule/global.md + events/<type>.md` as processing guidelines
-
-**Three actors, no overlap:**
-- **Human**: controls review gate (approve / reject / request-changes)
-- **Agent**: monitors, evaluates, creates PRs, updates inbox status
-- **Code**: scans git diffs, computes dependency graphs, rebuilds derived files, performs merges
-
-**Docs structure:**
-- `docs/design.md` — single design document
-- `docs/architecture/_archive/` — superseded design and implementation docs
-- Research material lives in vault `knowledge base/` (migrated 2026-04-17, PR 0005)
-
-**Archived (old prototype, not current):**
-- `_archive/src/memory_system/` — Phase 0 JSON memory engine (deprecated)
-- `_archive/tests/` — tests for the old prototype
+- `_archive/src/memory_system/` — Phase 0 JSON memory engine（已废弃）
+- `_archive/tests/` — 老 prototype 的测试
+- `docs/architecture/_archive/` — 被合并进 `docs/design.md` 的旧设计文档
