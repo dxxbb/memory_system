@@ -10,7 +10,7 @@
 
 原始文档已归档至 `docs/architecture/_archive/`。元原则（可解释性）见 `dxy_OS` vault 的 `workspace/project/forge/onepage.md`。
 
-> **说明**：§14 (MVP Week 1 落地) 保留了 `2026-04-13` 当时的交付清单原文，其中 §14.3.8 的 `assist/SP/config/master.md` 结构示例是旧版（三段中文骨架），当前实际结构已切换为四段英文骨架——三段 vs 四段的设计本身尚在讨论中，故此节不改，留待后续 PR 单独讨论。
+> **说明**：§14 (MVP Week 1 落地) 保留了 `2026-04-13` 当时的交付清单原文，其中 §14.3.8 的 `assist/SP/config/master.md` 结构示例是旧版（三段中文骨架）。当前实际结构已固定为**五段**：about user / workspace / knowledge base / preference / skill，与五个 source 目录一一对应（见 `06 system/operating rule/section-rebuild.md` §2）。`2026-04-19` 落地。
 
 ---
 
