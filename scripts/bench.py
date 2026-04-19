@@ -234,8 +234,8 @@ TIER_THRESHOLDS = {
     "preferences": 1.00,
     "project": 0.90,
     "knowledge": 0.80,
-    "reach-path": 0.80,
     "noise": 1.00,         # 0 FAIL-NOISE allowed
+    # reach-path: Phase 2 才测；Phase 1 仅在 per-question 报告里记录 FAIL-FORGOT。
 }
 
 
@@ -415,7 +415,7 @@ def main() -> int:
 
     # Report
     date = dt.date.today().isoformat()
-    report_rel = Path("system") / "bench" / "reports" / f"{date}-{args.label}.md"
+    report_rel = Path("06 system") / "bench" / "reports" / f"{date}-{args.label}.md"
     report_path = vault / report_rel
     write_report(results, report_path, args.label, args.sp, AGENT_MODEL, JUDGE_MODEL)
 
