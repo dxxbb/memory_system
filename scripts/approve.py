@@ -38,8 +38,8 @@ except ImportError:
     sys.stderr.write("approve.py needs PyYAML: pip install pyyaml\n")
     sys.exit(1)
 
-CHANGE_LOG_DIR = "system/change log"
-INBOX_DIR = "system/monitor inbox"
+CHANGE_LOG_DIR = "06 system/change log"
+INBOX_DIR = "06 system/monitor inbox"
 PR_ID_RE = re.compile(r"^pr/(\d+)(?:-.*)?$")
 
 

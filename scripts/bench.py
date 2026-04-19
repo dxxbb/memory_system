@@ -358,10 +358,10 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--vault", help="vault root (default $PERSONAL_OS_VAULT or ~/dxy_OS)")
     ap.add_argument("--label", required=True, help="change label (e.g. kb-sp-integration)")
-    ap.add_argument("--sp", default="assist/SP/output/claude code/CLAUDE.md",
+    ap.add_argument("--sp", default="01 assist/SP/output/claude code/CLAUDE.md",
                     help="path (relative to vault) to the SP file to test against")
-    ap.add_argument("--questions", default="system/bench/questions.md")
-    ap.add_argument("--judge-prompt", default="system/bench/judge-prompt.md")
+    ap.add_argument("--questions", default="06 system/bench/questions.md")
+    ap.add_argument("--judge-prompt", default="06 system/bench/judge-prompt.md")
     ap.add_argument("--dry-run", action="store_true",
                     help="parse and list questions only; no API calls")
     ap.add_argument("--tier", help="only run questions in this tier")

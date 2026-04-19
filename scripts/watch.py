@@ -30,8 +30,8 @@ except ImportError:
     sys.exit(1)
 
 SKIP_TRAILERS = ("Approved-by:", "Rebuilt-by:", "System-owned-by:")
-STATE_FILE = "system/.watcher-state.json"
-INBOX_DIR = "system/monitor inbox"
+STATE_FILE = "06 system/.watcher-state.json"
+INBOX_DIR = "06 system/monitor inbox"
 FALLBACK_WINDOW = 50  # commits to look back when state is missing
 
 
@@ -45,7 +45,7 @@ def vault_root() -> Path:
 def git(root: Path, *args: str) -> str:
     # core.quotepath=false so non-ASCII filenames (CJK / emoji / …) are
     # returned verbatim instead of octal-escaped + double-quoted. Without this,
-    # `git show --name-status` emits e.g. `"knowledge base/src/clipping/\345\276\256...md"`
+    # `git show --name-status` emits e.g. `"04 knowledge base/src/clipping/\345\276\256...md"`
     # which breaks downstream .endswith(".md") checks.
     result = subprocess.run(
         ["git", "-C", str(root), "-c", "core.quotepath=false", *args],
@@ -60,29 +60,29 @@ def git(root: Path, *args: str) -> str:
 
 
 def classify(path: str) -> str:
-    if path.startswith("assist/memory collection/agents memory/"):
+    if path.startswith("01 assist/memory collection/agents memory/"):
         return "cc_memory"
-    if path.startswith("assist/memory collection/history/"):
+    if path.startswith("01 assist/memory collection/history/"):
         return "conversation"
-    if path.startswith("assist/learn and improve/skill/"):
+    if path.startswith("01 assist/learn and improve/skill/"):
         return "skill_change"
-    if path.startswith("assist/learn and improve/preference/"):
+    if path.startswith("01 assist/learn and improve/preference/"):
         return "preference_change"
-    if path.startswith("user/daily memo/"):
+    if path.startswith("02 user/daily memo/"):
         return "daily_memo"
-    if path.startswith("user/"):
+    if path.startswith("02 user/"):
         return "identity_change"
-    if path.startswith("workspace/white board/"):
+    if path.startswith("03 workspace/white board/"):
         return "whiteboard"
-    if path.startswith("workspace/project/"):
+    if path.startswith("03 workspace/project/"):
         return "project_update"
-    if path.startswith("workspace/topic/"):
+    if path.startswith("03 workspace/topic/"):
         return "topic_update"
-    if path.startswith("workspace/reading/"):
+    if path.startswith("03 workspace/reading/"):
         return "reading_update"
-    if path.startswith("workspace/writing/"):
+    if path.startswith("03 workspace/writing/"):
         return "writing_update"
-    if path.startswith("knowledge base/src/"):
+    if path.startswith("04 knowledge base/src/"):
         return "ingest"
     return "unclassified"
 
@@ -260,7 +260,7 @@ def main() -> int:
             skipped_commits += 1
             continue
         for f in files_in_commit(root, rev):
-            if f.startswith("system/") or f.startswith("."):
+            if f.startswith("06 system/") or f.startswith("."):
                 skipped_files += 1
                 continue
             if "/." in f:

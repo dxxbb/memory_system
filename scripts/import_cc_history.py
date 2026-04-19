@@ -27,7 +27,7 @@ import re
 import sys
 from pathlib import Path
 
-CONV_DIR = "assist/memory collection/history"
+CONV_DIR = "01 assist/memory collection/history"
 MAX_RESULT_CHARS = 200
 
 

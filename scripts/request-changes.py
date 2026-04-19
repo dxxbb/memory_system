@@ -30,8 +30,8 @@ except ImportError:
     sys.stderr.write("request-changes.py needs PyYAML: pip install pyyaml\n")
     sys.exit(1)
 
-PR_REVIEW_DIR = "system/PR review"
-INBOX_DIR = "system/monitor inbox"
+PR_REVIEW_DIR = "06 system/PR review"
+INBOX_DIR = "06 system/monitor inbox"
 PR_ID_RE = re.compile(r"^pr/(\d+)(?:-.*)?$")
 
 

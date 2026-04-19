@@ -30,7 +30,7 @@ import os
 import sys
 from pathlib import Path
 
-CC_SUBDIR = "assist/memory collection/agents memory"
+CC_SUBDIR = "01 assist/memory collection/agents memory"
 
 
 def vault_root(arg: str | None) -> Path:
